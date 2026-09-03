@@ -37,6 +37,7 @@ pnpm typecheck --watch
 ### Week 1: Database Schema (Task 1)
 
 **Monday: Extensions和Helpers**
+
 ```bash
 # 创建迁移文件
 supabase migration new extensions
@@ -57,6 +58,7 @@ git commit -m "feat(plan01): add database extensions and helpers"
 ```
 
 **Tuesday: 创建测试框架**
+
 ```bash
 # 创建测试文件
 touch supabase/tests/0001_extensions.test.sql
@@ -73,6 +75,7 @@ pnpm test:db
 ```
 
 **Wednesday-Friday: Identity Tables**
+
 - profiles表
 - workspaces表
 - memberships表
@@ -186,12 +189,14 @@ supabase stop  # 可选：节省资源
 ### 问题1：数据库迁移失败
 
 **症状：**
+
 ```bash
 pnpm db:reset
 # Error: migration 0005 failed at line 42
 ```
 
 **解决：**
+
 ```bash
 # 1. 查看详细错误
 supabase db reset --debug
@@ -211,9 +216,10 @@ supabase db reset --no-seed
 Worker日志显示"No jobs available"，但队列里有消息
 
 **解决：**
+
 ```sql
 -- 检查Worker角色权限
-SELECT routine_name 
+SELECT routine_name
 FROM information_schema.routine_privileges
 WHERE grantee = 'knowledge_worker'
   AND routine_name LIKE 'worker_%';
@@ -235,17 +241,16 @@ SELECT recover_stale_jobs();
 浏览器显示403 Forbidden
 
 **检查顺序：**
+
 ```typescript
 // 1. 检查用户认证状态
-const { data: { session } } = await supabase.auth.getSession();
+const {
+  data: { session },
+} = await supabase.auth.getSession();
 console.log('Session:', session); // 应该有user和access_token
 
 // 2. 检查workspace权限
-const hasCapability = await requireWorkspaceCapability(
-  supabase,
-  workspaceId,
-  'documents.upload'
-);
+const hasCapability = await requireWorkspaceCapability(supabase, workspaceId, 'documents.upload');
 console.log('Has upload capability:', hasCapability);
 
 // 3. 检查Storage bucket策略
@@ -262,6 +267,7 @@ console.log('Has upload capability:', hasCapability);
 Document处理到ANALYZING stage但没有生成artifacts
 
 **检查：**
+
 ```typescript
 // 1. 验证OpenAI API key
 const testCompletion = await openai.chat.completions.create({
@@ -293,24 +299,29 @@ console.log('Chunks count:', chunks.length);
 # Week <N> Sprint Review
 
 ## 本周完成
+
 - [x] Task 1: Database schema
 - [x] Task 2: Identity tables
 - [ ] Task 3: RLS policies (50%)
 
 ## 遇到的问题
+
 1. Composite foreign keys语法错误 → 已解决
 2. pgTAP测试一直失败 → 发现是seed data问题
 
 ## 下周计划
+
 - [ ] 完成Task 3 RLS policies
 - [ ] 开始Task 4 认证集成
 - [ ] 编写E2E测试for登录流程
 
 ## 需要帮助
+
 - 不确定Supabase Auth的最佳实践
 - 性能测试工具选择
 
 ## Metrics
+
 - 代码提交: 15 commits
 - 测试覆盖率: 78%
 - 代码审查: 3 PRs
@@ -321,11 +332,13 @@ console.log('Chunks count:', chunks.length);
 ## 🎯 保持高效的习惯
 
 ### 1. 晨会自问（5分钟）
+
 - 今天要完成哪个task？
 - 有哪些blockers？
 - 需要谁的帮助？
 
 ### 2. 番茄工作法
+
 ```
 25分钟专注编码
 5分钟休息
@@ -333,6 +346,7 @@ console.log('Chunks count:', chunks.length);
 ```
 
 ### 3. 定期检查Exit Gate
+
 ```bash
 # 每个task完成后
 cat docs/superpowers/plans/2026-09-02-ai-knowledge-base-01-foundation.md | \
@@ -343,6 +357,7 @@ cat docs/superpowers/plans/2026-09-02-ai-knowledge-base-01-foundation.md | \
 ```
 
 ### 4. 保持文档更新
+
 - 发现新问题 → 立即记录到runbook
 - 找到workaround → 添加到troubleshooting
 - 改变设计决策 → 更新计划文档
@@ -406,6 +421,7 @@ import { testWorkspace, testUsers } from '@/tests/fixtures/common';
 ### Monday: Task 1 冻结contracts
 
 **上午（2-3小时）：**
+
 ```typescript
 // 1. 创建 packages/domain/src/processing.ts
 // - 定义ProcessingStage, ProcessingState枚举
@@ -417,6 +433,7 @@ import { testWorkspace, testUsers } from '@/tests/fixtures/common';
 ```
 
 **下午（2-3小时）：**
+
 ```typescript
 // 3. 创建 packages/domain/src/search.ts
 // - 定义WorkspaceSearchRequest
@@ -433,13 +450,14 @@ git commit -m "feat(plan02): freeze processing and search contracts"
 ### Tuesday: Task 2 数据库jobs表
 
 **全天（6-8小时）：**
+
 ```sql
 -- 1. 创建迁移
 -- supabase/migrations/0005_document_processing.sql
 
 -- 2. 创建表：
 --    - processing_jobs
---    - job_attempts  
+--    - job_attempts
 --    - revision_stage_results
 
 -- 3. 创建worker role
@@ -457,6 +475,7 @@ CREATE FUNCTION worker_heartbeat(...) ...
 ### Wednesday: Task 3 Worker runtime
 
 **上午：**
+
 ```typescript
 // 创建 apps/worker/package.json
 // 创建 apps/worker/src/index.ts
@@ -466,6 +485,7 @@ CREATE FUNCTION worker_heartbeat(...) ...
 ```
 
 **下午：**
+
 ```typescript
 // 创建 apps/worker/src/db/worker-rpc.ts
 // - SupabaseWorkerRpc类
@@ -479,6 +499,7 @@ CREATE FUNCTION worker_heartbeat(...) ...
 ### Thursday: Task 4 Validation stage
 
 **全天：**
+
 ```typescript
 // 1. 集成ClamAV Docker
 // 2. 实现 apps/worker/src/stages/validate-file.ts
@@ -489,11 +510,13 @@ CREATE FUNCTION worker_heartbeat(...) ...
 ### Friday: Code review和收尾
 
 **上午：**
+
 - 完成本周所有测试
 - 修复lint/typecheck错误
 - 更新文档
 
 **下午：**
+
 - 创建PR
 - Self-review代码
 - 记录下周TODO

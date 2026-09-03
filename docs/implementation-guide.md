@@ -5,6 +5,7 @@
 ### 1.1 本地开发环境搭建
 
 **必需工具：**
+
 ```bash
 # 检查版本
 node --version  # 需要 24 LTS
@@ -19,6 +20,7 @@ supabase --version
 ```
 
 **创建项目结构：**
+
 ```bash
 # 初始化monorepo
 mkdir -p apps/web apps/worker packages/domain packages/ai packages/observability
@@ -64,6 +66,7 @@ EOF
 ```
 
 **启动本地Supabase：**
+
 ```bash
 # 初始化Supabase项目
 supabase init
@@ -84,6 +87,7 @@ supabase start
 ### 1.2 配置文件设置
 
 **TypeScript配置（根目录 tsconfig.json）：**
+
 ```json
 {
   "compilerOptions": {
@@ -109,6 +113,7 @@ supabase start
 ```
 
 **ESLint配置（根目录 eslint.config.js）：**
+
 ```javascript
 import tseslint from '@typescript-eslint/eslint-plugin';
 import tsparser from '@typescript-eslint/parser';
@@ -130,6 +135,7 @@ export default [
 ### 1.3 AI提供商配置
 
 **OpenAI设置：**
+
 ```bash
 # .env.local (不要提交到git)
 OPENAI_API_KEY=sk-...
@@ -147,6 +153,7 @@ SUPABASE_SERVICE_ROLE_KEY=eyJ...
 ```
 
 **注意事项：**
+
 - 开发阶段使用个人OpenAI API key
 - 生产环境需要组织账号并配置usage limits
 - 所有AI请求必须设置`store: false`
@@ -158,19 +165,21 @@ SUPABASE_SERVICE_ROLE_KEY=eyJ...
 ### 2.1 执行顺序（按Plan 01任务顺序）
 
 **任务优先级：**
+
 ```
-Task 1: 数据库Extensions和Schema → 
-Task 2: Identity和Workspaces表 → 
-Task 3: RLS策略 → 
-Task 4: 认证集成 → 
-Task 5: 工作区UI → 
-Task 6: 邀请系统 → 
+Task 1: 数据库Extensions和Schema →
+Task 2: Identity和Workspaces表 →
+Task 3: RLS策略 →
+Task 4: 认证集成 →
+Task 5: 工作区UI →
+Task 6: 邀请系统 →
 Task 7: 上传Session
 ```
 
 ### 2.2 关键检查点
 
 **每个任务完成后验证：**
+
 ```bash
 # 1. 类型检查通过
 pnpm typecheck
@@ -187,6 +196,7 @@ git commit -m "feat(plan01): <task-description>"
 ```
 
 **Plan 01 Exit Gate验证：**
+
 ```bash
 # 完整测试套件
 pnpm lint && \
@@ -213,6 +223,7 @@ pnpm test:e2e:foundation
 ### 3.1 最具挑战的任务
 
 **Task 4: 文件验证（关键）**
+
 ```bash
 # 需要集成ClamAV
 docker pull clamav/clamav:latest
@@ -223,6 +234,7 @@ pnpm test apps/worker/src/stages/validate-file.test.ts
 ```
 
 **Task 5: 格式提取（最复杂）**
+
 - 需要7种格式的提取器
 - 每个格式需要确定性测试fixture
 - PDF OCR最耗时（需要视觉提取）
@@ -230,9 +242,10 @@ pnpm test apps/worker/src/stages/validate-file.test.ts
 ### 3.2 开发建议
 
 **并行开发策略（同一任务内）：**
+
 ```
 开发者A: PDF提取器
-开发者B: DOCX提取器  
+开发者B: DOCX提取器
 开发者C: 图像提取器
 开发者D: 文本提取器（Markdown + TXT）
 
@@ -240,6 +253,7 @@ pnpm test apps/worker/src/stages/validate-file.test.ts
 ```
 
 **Worker开发调试：**
+
 ```typescript
 // apps/worker/src/index.ts
 // 本地调试模式
@@ -256,6 +270,7 @@ if (process.env.NODE_ENV === 'development') {
 ### 3.3 常见陷阱规避
 
 **❌ 错误做法：**
+
 ```typescript
 // 不要在Worker中直接访问表
 const chunks = await supabase
@@ -264,13 +279,14 @@ const chunks = await supabase
 ```
 
 **✅ 正确做法：**
+
 ```typescript
 // 通过受限RPC
 await workerRpc.replaceChunks({
-  job,  // 包含workspace_id
+  job, // 包含workspace_id
   chunks,
   requestId,
-});  // ✅ RPC从job派生workspace_id
+}); // ✅ RPC从job派生workspace_id
 ```
 
 ---
@@ -280,6 +296,7 @@ await workerRpc.replaceChunks({
 ### 4.1 AI质量门槛准备
 
 **提前准备评估语料：**
+
 ```bash
 # tests/ai-evals/knowledge-corpus.json
 {
@@ -305,6 +322,7 @@ await workerRpc.replaceChunks({
 ```
 
 **人工标注要求：**
+
 - 至少30个案例
 - 涵盖中英文内容
 - 包含提示注入测试用例
@@ -313,15 +331,16 @@ await workerRpc.replaceChunks({
 ### 4.2 图谱性能优化
 
 **300节点限制测试：**
+
 ```typescript
 // tests/e2e/graph-performance.spec.ts
 test('renders 300 nodes in <2s', async ({ page }) => {
   await page.goto('/w/${workspaceId}/graph');
-  
+
   const start = Date.now();
   await page.waitForSelector('[data-testid="graph-ready"]');
   const duration = Date.now() - start;
-  
+
   expect(duration).toBeLessThan(2000);
 });
 ```
@@ -333,6 +352,7 @@ test('renders 300 nodes in <2s', async ({ page }) => {
 ### 5.1 SSE流式传输
 
 **服务端实现：**
+
 ```typescript
 // app/api/chat/stream/route.ts
 export async function POST(req: Request) {
@@ -340,14 +360,12 @@ export async function POST(req: Request) {
   const stream = new ReadableStream({
     async start(controller) {
       for await (const chunk of groundedChatProvider.stream(input)) {
-        controller.enqueue(
-          encoder.encode(`data: ${JSON.stringify(chunk)}\n\n`)
-        );
+        controller.enqueue(encoder.encode(`data: ${JSON.stringify(chunk)}\n\n`));
       }
       controller.close();
     },
   });
-  
+
   return new Response(stream, {
     headers: {
       'Content-Type': 'text/event-stream',
@@ -358,6 +376,7 @@ export async function POST(req: Request) {
 ```
 
 **客户端消费：**
+
 ```typescript
 const eventSource = new EventSource('/api/chat/stream');
 eventSource.onmessage = (event) => {
@@ -378,6 +397,7 @@ if (permissionRevoked) {
 ### 6.1 CI/CD Pipeline设置
 
 **GitHub Actions工作流：**
+
 ```yaml
 # .github/workflows/ci.yml
 name: CI
@@ -391,13 +411,13 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 24
-      
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-      
+
       - name: Start Supabase
         run: supabase start
-      
+
       - name: Run tests
         run: |
           pnpm lint
@@ -406,7 +426,7 @@ jobs:
           pnpm test:db
           pnpm build
           pnpm test:e2e
-      
+
       - name: Security scan
         run: pnpm scan:secrets
 ```
@@ -414,6 +434,7 @@ jobs:
 ### 6.2 Release Gate实施
 
 **发布检查清单自动化：**
+
 ```typescript
 // scripts/release-gate.ts
 const evidence = await collectEvidence();
@@ -466,6 +487,7 @@ feature/plan02-task1-contracts
 ```
 
 **分支命名规范：**
+
 ```
 feature/plan<NN>-task<N>-<short-description>
 fix/plan<NN>-<bug-description>
@@ -475,6 +497,7 @@ test/plan<NN>-<test-area>
 ### 代码审查检查清单
 
 **提交PR前自检：**
+
 - [ ] `pnpm lint`通过
 - [ ] `pnpm typecheck`通过
 - [ ] `pnpm test`通过
@@ -491,6 +514,7 @@ test/plan<NN>-<test-area>
 ### 风险1：AI成本超支
 
 **缓解：**
+
 - 开发阶段使用小文档测试
 - 设置OpenAI usage limits
 - 监控每日API消耗
@@ -499,6 +523,7 @@ test/plan<NN>-<test-area>
 ### 风险2：性能预算超标
 
 **缓解：**
+
 - 每个sprint运行性能测试
 - 提前优化慢查询（使用EXPLAIN ANALYZE）
 - 300节点图谱从一开始就测试
@@ -507,6 +532,7 @@ test/plan<NN>-<test-area>
 ### 风险3：跨租户泄漏
 
 **缓解：**
+
 - 每次提交运行安全测试套件
 - Code review重点检查RLS策略
 - 所有查询必须包含workspace_id
@@ -518,16 +544,17 @@ test/plan<NN>-<test-area>
 
 **总预估：18-22周（4.5-5.5个月）**
 
-| 阶段 | 时长 | 里程碑 |
-|-----|------|-------|
-| 初始化 | 1-2周 | 环境就绪 |
-| Plan 01 | 3-4周 | Foundation完成 |
+| 阶段    | 时长  | 里程碑               |
+| ------- | ----- | -------------------- |
+| 初始化  | 1-2周 | 环境就绪             |
+| Plan 01 | 3-4周 | Foundation完成       |
 | Plan 02 | 4-6周 | Ingestion&Search完成 |
-| Plan 03 | 4-5周 | AI&Graph完成 |
-| Plan 04 | 3-4周 | Chat&Collab完成 |
-| Plan 05 | 3-4周 | Release就绪 |
+| Plan 03 | 4-5周 | AI&Graph完成         |
+| Plan 04 | 3-4周 | Chat&Collab完成      |
+| Plan 05 | 3-4周 | Release就绪          |
 
 **关键决策点：**
+
 - Week 4: Plan 01通过 → 继续Plan 02
 - Week 10: Plan 02通过 → 继续Plan 03
 - Week 15: Plan 03通过 → 继续Plan 04

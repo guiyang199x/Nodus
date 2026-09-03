@@ -5,6 +5,7 @@
 ### 小团队（3-4人）
 
 **角色分配：**
+
 ```
 Tech Lead / 全栈工程师 (1人)
 ├─ 负责架构决策
@@ -40,7 +41,7 @@ Tech Lead (1人) - 同上
 ├─ 后端工程师A: Worker pipeline, 格式提取
 └─ 后端工程师B: Database schema, RLS, AI integration
 
-前端小组 (2人)  
+前端小组 (2人)
 ├─ 前端工程师A: Core UI (Library, Upload, Document view)
 └─ 前端工程师B: AI features (Graph, Chat, Review)
 
@@ -67,6 +68,7 @@ QA工程师 (1人) - 同上
    - 技术债务如何？
 
 2. **选择本Sprint任务**
+
    ```
    Plan 02 正在进行：
    ✅ Task 1: Contracts (已完成)
@@ -74,7 +76,7 @@ QA工程师 (1人) - 同上
    🟡 Task 3: Worker runtime (进行中，80%)
    ⬜ Task 4: Validation (下个sprint)
    ⬜ Task 5: Extraction (下个sprint)
-   
+
    本Sprint承诺：
    - 完成Task 3
    - 完成Task 4
@@ -110,6 +112,7 @@ Backlog            | To Do          | In Progress        | In Review      | Done
 ```
 
 **标签系统：**
+
 - `plan01`, `plan02`, ...
 - `backend`, `frontend`, `database`, `tests`
 - `blocked`, `needs-review`, `urgent`
@@ -157,24 +160,29 @@ git commit -m "docs(plan02): update worker runbook"
 
 ```markdown
 ## Description
+
 简要描述这个PR做了什么
 
 ## Related Issue
+
 Closes #123
 
 ## Type of Change
+
 - [ ] Bug fix
 - [x] New feature
 - [ ] Breaking change
 - [ ] Documentation update
 
 ## Testing
+
 - [x] Unit tests pass
 - [x] Integration tests pass
 - [x] E2E tests pass (if applicable)
 - [x] Manual testing completed
 
 ## Checklist
+
 - [x] Code follows style guidelines
 - [x] Self-review completed
 - [x] Comments added for complex logic
@@ -184,9 +192,11 @@ Closes #123
 - [x] Database migration tested (if applicable)
 
 ## Screenshots (if applicable)
+
 <before-after screenshots>
 
 ## Additional Notes
+
 任何需要reviewer注意的事项
 ```
 
@@ -197,11 +207,13 @@ Closes #123
 ### Reviewer检查清单
 
 **功能性：**
+
 - [ ] 代码实现了PR描述的功能
 - [ ] Edge cases被考虑到
 - [ ] 错误处理完善
 
 **安全性：**
+
 - [ ] 无SQL注入风险（使用parameterized queries）
 - [ ] 无XSS风险（用户输入被sanitize）
 - [ ] RLS策略正确（workspace_id过滤）
@@ -209,18 +221,21 @@ Closes #123
 - [ ] 日志无敏感数据（chunk text, prompts, tokens）
 
 **性能：**
+
 - [ ] 无N+1查询
 - [ ] 大数据集有pagination
 - [ ] 索引正确（检查EXPLAIN ANALYZE）
 - [ ] 无blocking循环（使用async/await正确）
 
 **可维护性：**
+
 - [ ] 代码清晰易读
 - [ ] 复杂逻辑有注释
 - [ ] 函数职责单一
 - [ ] 变量命名语义化
 
 **测试：**
+
 - [ ] 测试覆盖核心逻辑
 - [ ] 测试有意义（不是形式主义）
 - [ ] Mock合理使用
@@ -229,12 +244,14 @@ Closes #123
 ### 给反馈的艺术
 
 **❌ 不好的反馈：**
+
 ```
 "这代码写得太烂了"
 "为什么不这样做？"
 ```
 
 **✅ 好的反馈：**
+
 ```
 "建议: 这里可以使用Promise.all并行处理，能提升30%性能
 示例代码：
@@ -252,6 +269,7 @@ const results = await Promise.all(items.map(item => process(item)));
 ```
 
 **反馈优先级标签：**
+
 - `🔴 MUST FIX` - 安全问题、功能缺陷、破坏性变更
 - `🟡 SHOULD FIX` - 性能问题、可维护性、最佳实践
 - `🟢 NIT` - 代码风格、命名建议（可选）
@@ -263,11 +281,13 @@ const results = await Promise.all(items.map(item => process(item)));
 ### 每日站会（15分钟）
 
 **每人回答3个问题：**
+
 1. 昨天完成了什么？
 2. 今天计划做什么？
 3. 有什么blockers？
 
 **示例：**
+
 ```
 张三 (后端):
 1. 昨天: 完成了worker heartbeat实现，通过了单元测试
@@ -293,26 +313,32 @@ const results = await Promise.all(items.map(item => process(item)));
 # RFC: Worker Lease Mechanism
 
 ## Problem
+
 Worker可能crash，导致job被永久锁住
 
 ## Proposed Solution
+
 1. 每个job有lease_expires_at字段
 2. Worker每30s发送heartbeat更新lease
 3. 定期检查stale jobs (lease过期 > 15min)
 4. 自动requeue stale jobs
 
 ## Alternatives Considered
+
 - Redis distributed lock: 增加依赖复杂度
 - Database advisory lock: 不适合长时间持有
 
 ## Trade-offs
+
 - Pro: 简单可靠，利用现有Postgres
 - Con: 需要额外的maintenance loop
 
 ## Decision
+
 采用方案1，理由：简单性 > 其他方案的边际收益
 
 ## Action Items
+
 - [ ] @张三 实现heartbeat logic
 - [ ] @李四 实现stale job recovery
 - [ ] @王五 添加lease timeout测试
@@ -321,6 +347,7 @@ Worker可能crash，导致job被永久锁住
 ### Slack/微信使用规范
 
 **频道划分：**
+
 ```
 #general          - 一般讨论
 #plan-01          - Plan 01相关
@@ -332,6 +359,7 @@ Worker可能crash，导致job被永久锁住
 ```
 
 **消息原则：**
+
 - 技术决策 → 写RFC文档
 - 代码问题 → GitHub Issue/PR评论
 - 紧急bug → @channel + 创建Issue
@@ -346,13 +374,14 @@ Worker可能crash，导致job被永久锁住
 **场景：两个工程师对实现方案有不同意见**
 
 **步骤：**
+
 1. **各自写出方案**（方案A vs 方案B）
 2. **列出优缺点**
    ```
    方案A (使用Redis cache):
    Pro: 性能更好 (O(1) lookup)
    Con: 增加依赖，运维复杂度
-   
+
    方案B (使用Postgres cache table):
    Pro: 利用现有基础设施，事务一致性
    Con: 稍慢 (O(log n) with index)
@@ -385,6 +414,7 @@ git push --force-with-lease
 ```
 
 **预防冲突：**
+
 - 每天rebase develop一次
 - PR尽快merge，减少分支寿命
 - 大的重构提前通知团队
@@ -394,6 +424,7 @@ git push --force-with-lease
 **场景：某个task预估2天，实际需要5天**
 
 **立即沟通：**
+
 ```
 "Hey team, Task 3 worker runtime比预期复杂，需要额外3天
 原因：lease mechanism需要处理edge cases（crash recovery, stale jobs）
@@ -402,6 +433,7 @@ git push --force-with-lease
 ```
 
 **调整计划：**
+
 - 重新评估Sprint目标
 - 考虑简化scope（MVP first）
 - 如有必要，寻求帮助
@@ -413,12 +445,14 @@ git push --force-with-lease
 ### 每周分享会（1小时，周五下午）
 
 **轮流分享：**
+
 - 本周学到的技术点
 - 踩过的坑和解决方案
 - 代码中的精妙设计
 - 读的好文章/视频推荐
 
 **示例主题：**
+
 ```
 Week 1: "Supabase RLS最佳实践"
 Week 2: "如何调试复杂的SQL查询"
@@ -434,20 +468,25 @@ Week 4: "OpenAI Structured Output实战"
 # Troubleshooting: Worker无法claim job
 
 ## 症状
+
 Worker日志显示"No jobs available"，但队列中有消息
 
 ## 根本原因
+
 Worker role缺少EXECUTE权限on worker_claim_processing_job RPC
 
 ## 解决方案
+
 \`\`\`sql
 GRANT EXECUTE ON FUNCTION worker_claim_processing_job TO knowledge_worker;
 \`\`\`
 
 ## 预防
+
 在迁移文件中添加明确的GRANT语句，不依赖默认权限
 
 ## 相关
+
 - Issue #42
 - PR #45
 ```
@@ -459,6 +498,7 @@ GRANT EXECUTE ON FUNCTION worker_claim_processing_job TO knowledge_worker;
 ### 庆祝小胜利
 
 **完成里程碑时：**
+
 - Plan 01 Exit Gate通过 → 团队聚餐 🍕
 - 第一个用户成功上传文档 → 截图分享到#wins
 - AI分析首次返回正确结果 → 欢呼庆祝 🎉
@@ -467,12 +507,14 @@ GRANT EXECUTE ON FUNCTION worker_claim_processing_job TO knowledge_worker;
 ### 保持可持续节奏
 
 **避免Burnout：**
+
 - ❌ 不鼓励加班文化
 - ✅ 鼓励准时下班（6pm）
 - ✅ 周末不工作（除非生产事故）
 - ✅ 定期休假
 
 **工作时间内保持高效：**
+
 - 上午：深度工作（写代码）
 - 下午：会议、Code review、协作
 - 避免打断：专注时段关闭通知
@@ -480,12 +522,14 @@ GRANT EXECUTE ON FUNCTION worker_claim_processing_job TO knowledge_worker;
 ### 心理安全
 
 **鼓励的文化：**
+
 - 提问题不会被嘲笑
 - 承认错误不会被责怪
 - 尝试新方案即使失败也被认可
 - 互相帮助是常态
 
 **示例对话：**
+
 ```
 Junior: "我不太懂这个RLS策略怎么写..."
 Senior: "没问题，这确实挺复杂的。我们一起看看，
@@ -513,18 +557,19 @@ Senior: "没问题，这确实挺复杂的。我们一起看看，
    - 确定影响范围
 
 3. **响应**
+
    ```
    P0 (Critical - 服务完全不可用):
      - 立即通知on-call工程师
      - 创建incident channel
      - 每15分钟更新状态
      - 考虑rollback
-   
+
    P1 (High - 核心功能受影响):
      - 通知相关工程师
      - 1小时内响应
      - 每小时更新状态
-   
+
    P2/P3/P4: 正常优先级处理
    ```
 
@@ -537,25 +582,30 @@ Senior: "没问题，这确实挺复杂的。我们一起看看，
 5. **事后回顾（Postmortem）**
    ```markdown
    # Incident Postmortem: 2024-01-15 Search服务宕机
-   
+
    ## Timeline
+
    14:30 - 告警触发：search_p95_high
    14:35 - 确认问题：Postgres连接池耗尽
    14:45 - 部署hotfix：增加连接池大小
    15:00 - 服务恢复
-   
+
    ## Root Cause
+
    新部署的graph查询没有使用连接池，导致连接泄漏
-   
+
    ## Impact
+
    30分钟服务降级，~500个搜索请求失败
-   
+
    ## Action Items
+
    - [ ] 添加连接池监控告警
    - [ ] Code review checklist加入"检查连接释放"
    - [ ] 添加集成测试覆盖高并发场景
-   
+
    ## Lessons Learned
+
    1. 数据库连接是有限资源，必须显式管理
    2. 监控要更主动（连接数而不只是错误率）
    3. Staging环境需要模拟生产负载

@@ -1,0 +1,39 @@
+{
+  "name": "ai-knowledge-base",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "AI-powered knowledge base with document processing, hybrid search, and grounded chat",
+  "scripts": {
+    "dev:web": "pnpm --filter @knowledge/web dev",
+    "dev:worker": "pnpm --filter @knowledge/worker dev",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "typecheck": "pnpm -r --if-present typecheck",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "verify": "pnpm lint && pnpm typecheck && pnpm test",
+    "test:db": "supabase test db",
+    "build": "pnpm --filter @knowledge/web build && pnpm --filter @knowledge/worker build",
+    "db:reset": "supabase db reset",
+    "db:start": "supabase start",
+    "db:stop": "supabase stop",
+    "db:status": "supabase status",
+    "db:types": "supabase gen types typescript --local > packages/domain/src/database.types.ts"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^8.0.0",
+    "@typescript-eslint/parser": "^8.0.0",
+    "eslint": "^9.0.0",
+    "prettier": "^3.0.0",
+    "@types/node": "^24.0.0",
+    "typescript": "^5.6.0",
+    "vitest": "4.1.11"
+  },
+  "packageManager": "pnpm@9.0.0",
+  "engines": {
+    "node": ">=24.0.0",
+    "pnpm": ">=9.0.0"
+  }
+}

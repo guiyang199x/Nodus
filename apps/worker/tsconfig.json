@@ -1,0 +1,21 @@
+{
+  "extends": "../../tsconfig.node.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "paths": {
+      "@knowledge/domain": ["../../packages/domain/src"],
+      "@knowledge/domain/*": ["../../packages/domain/src/*"],
+      "@knowledge/ai": ["../../packages/ai/src"],
+      "@knowledge/ai/*": ["../../packages/ai/src/*"],
+      "@knowledge/observability": ["../../packages/observability/src"],
+      "@knowledge/observability/*": ["../../packages/observability/src/*"]
+    }
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
+}

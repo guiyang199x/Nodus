@@ -1,8 +1,69 @@
-.superpowers/
+# Dependencies
 node_modules/
-.next/
+.pnp
+.pnp.js
+
+# Testing
 coverage/
-playwright-report/
-test-results/
-.env*
-!.env.example
+*.lcov
+.nyc_output
+
+# Next.js
+.next/
+out/
+build/
+dist/
+
+# Production
+/build
+
+# Misc
+.DS_Store
+*.pem
+Thumbs.db
+
+# Debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Local env files
+.env
+.env*.local
+.env.production
+
+# Vercel
+.vercel
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+
+# Supabase
+.supabase/
+supabase/.temp/
+supabase/.branches/
+
+# Local brainstorm sessions
+.superpowers/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+logs
+*.log
+
+# Optional: Keep pnpm-lock.yaml for reproducible builds
+# Uncomment to ignore it in solo development
+# pnpm-lock.yaml
