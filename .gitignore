@@ -72,3 +72,6 @@ logs
 test-results
 playwright-report
 .playwright
+
+# Git worktrees
+.worktrees
