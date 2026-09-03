@@ -92,6 +92,7 @@
 ### Task 1: Bootstrap the Monorepo and Lock Cross-Plan Domain Contracts
 
 **Files:**
+
 - Create: `.nvmrc`
 - Create: `.npmrc`
 - Create: `package.json`
@@ -108,6 +109,7 @@
 - Test: `packages/domain/src/uploads.test.ts`
 
 **Interfaces:**
+
 - Consumes: 无；这是全仓首个可执行边界。
 - Produces: `WorkspaceRole`、`WorkspaceKind`、`Capability`、`WorkspaceContext`、`ActionResult<T>`、`hasCapability(role, capability): boolean`、`UploadFileInput`、`CreateUploadSessionsInput`、`UploadSession`、`parseUploadBatch(input): CreateUploadSessionsInput`。
 
@@ -181,40 +183,46 @@ save-exact=true
 
 ```ts
 // packages/domain/src/workspaces.test.ts
-import { describe, expect, it } from "vitest";
-import { CAPABILITIES, hasCapability } from "./workspaces";
+import { describe, expect, it } from 'vitest';
+import { CAPABILITIES, hasCapability } from './workspaces';
 
-describe("workspace capability matrix", () => {
-  it("gives owner every capability and viewer read only", () => {
-    expect(CAPABILITIES.every((capability) => hasCapability("owner", capability))).toBe(true);
-    expect(hasCapability("viewer", "documents.read")).toBe(true);
-    expect(hasCapability("viewer", "documents.upload")).toBe(false);
-    expect(hasCapability("admin", "members.manage_admin")).toBe(false);
-    expect(hasCapability("editor", "documents.trash")).toBe(true);
-    expect(hasCapability("editor", "documents.delete")).toBe(false);
+describe('workspace capability matrix', () => {
+  it('gives owner every capability and viewer read only', () => {
+    expect(CAPABILITIES.every((capability) => hasCapability('owner', capability))).toBe(true);
+    expect(hasCapability('viewer', 'documents.read')).toBe(true);
+    expect(hasCapability('viewer', 'documents.upload')).toBe(false);
+    expect(hasCapability('admin', 'members.manage_admin')).toBe(false);
+    expect(hasCapability('editor', 'documents.trash')).toBe(true);
+    expect(hasCapability('editor', 'documents.delete')).toBe(false);
   });
 });
 ```
 
 ```ts
 // packages/domain/src/uploads.test.ts
-import { describe, expect, it } from "vitest";
-import { parseUploadBatch } from "./uploads";
+import { describe, expect, it } from 'vitest';
+import { parseUploadBatch } from './uploads';
 
-describe("upload contract", () => {
-  it("accepts a supported batch and rejects masqueraded or oversized input", () => {
-    expect(parseUploadBatch({
-      workspaceId: "11111111-1111-4111-8111-111111111111",
-      files: [{ name: "notes.md", size: 12, declaredMime: "text/markdown" }],
-    }).files).toHaveLength(1);
-    expect(() => parseUploadBatch({
-      workspaceId: "11111111-1111-4111-8111-111111111111",
-      files: [{ name: "payload.exe", size: 12, declaredMime: "text/plain" }],
-    })).toThrow("不支持此文件格式");
-    expect(() => parseUploadBatch({
-      workspaceId: "11111111-1111-4111-8111-111111111111",
-      files: [{ name: "large.pdf", size: 52_428_801, declaredMime: "application/pdf" }],
-    })).toThrow("单文件不能超过 50 MB");
+describe('upload contract', () => {
+  it('accepts a supported batch and rejects masqueraded or oversized input', () => {
+    expect(
+      parseUploadBatch({
+        workspaceId: '11111111-1111-4111-8111-111111111111',
+        files: [{ name: 'notes.md', size: 12, declaredMime: 'text/markdown' }],
+      }).files
+    ).toHaveLength(1);
+    expect(() =>
+      parseUploadBatch({
+        workspaceId: '11111111-1111-4111-8111-111111111111',
+        files: [{ name: 'payload.exe', size: 12, declaredMime: 'text/plain' }],
+      })
+    ).toThrow('不支持此文件格式');
+    expect(() =>
+      parseUploadBatch({
+        workspaceId: '11111111-1111-4111-8111-111111111111',
+        files: [{ name: 'large.pdf', size: 52_428_801, declaredMime: 'application/pdf' }],
+      })
+    ).toThrow('单文件不能超过 50 MB');
   });
 });
 ```
@@ -229,44 +237,44 @@ Expected: FAIL，Vitest 报告无法解析 `./workspaces` 与 `./uploads`。
 
 ```ts
 // packages/domain/src/workspaces.ts
-import { z } from "zod";
+import { z } from 'zod';
 
-export const WorkspaceRoleSchema = z.enum(["owner", "admin", "editor", "viewer"]);
+export const WorkspaceRoleSchema = z.enum(['owner', 'admin', 'editor', 'viewer']);
 export type WorkspaceRole = z.infer<typeof WorkspaceRoleSchema>;
 
-export const WorkspaceKindSchema = z.enum(["personal", "team"]);
+export const WorkspaceKindSchema = z.enum(['personal', 'team']);
 export type WorkspaceKind = z.infer<typeof WorkspaceKindSchema>;
 
 export const CapabilitySchema = z.enum([
-  "documents.read",
-  "documents.upload",
-  "documents.trash",
-  "documents.delete",
-  "jobs.reprocess",
-  "knowledge.write",
-  "comments.write",
-  "qa.publish",
-  "members.manage_basic",
-  "members.manage_admin",
-  "workspace.delete",
+  'documents.read',
+  'documents.upload',
+  'documents.trash',
+  'documents.delete',
+  'jobs.reprocess',
+  'knowledge.write',
+  'comments.write',
+  'qa.publish',
+  'members.manage_basic',
+  'members.manage_admin',
+  'workspace.delete',
 ]);
 export type Capability = z.infer<typeof CapabilitySchema>;
 export const CAPABILITIES = CapabilitySchema.options;
 
-const read: Capability[] = ["documents.read"];
+const read: Capability[] = ['documents.read'];
 const edit: Capability[] = [
   ...read,
-  "documents.upload",
-  "documents.trash",
-  "knowledge.write",
-  "comments.write",
-  "qa.publish",
+  'documents.upload',
+  'documents.trash',
+  'knowledge.write',
+  'comments.write',
+  'qa.publish',
 ];
 
 export const ROLE_CAPABILITIES: Readonly<Record<WorkspaceRole, readonly Capability[]>> = {
   viewer: read,
   editor: edit,
-  admin: [...edit, "documents.delete", "jobs.reprocess", "members.manage_basic"],
+  admin: [...edit, 'documents.delete', 'jobs.reprocess', 'members.manage_basic'],
   owner: [...CAPABILITIES],
 };
 
@@ -283,48 +291,56 @@ export const WorkspaceContextSchema = z.object({
 export type WorkspaceContext = z.infer<typeof WorkspaceContextSchema>;
 
 export type ActionError = {
-  code: "AUTH_REQUIRED" | "FORBIDDEN" | "INVALID_INPUT" | "CONFLICT" | "NOT_FOUND" | "DEPENDENCY_FAILED";
+  code:
+    | 'AUTH_REQUIRED'
+    | 'FORBIDDEN'
+    | 'INVALID_INPUT'
+    | 'CONFLICT'
+    | 'NOT_FOUND'
+    | 'DEPENDENCY_FAILED';
   message: string;
 };
-export type ActionResult<T = undefined> =
-  | { ok: true; data: T }
-  | { ok: false; error: ActionError };
+export type ActionResult<T = undefined> = { ok: true; data: T } | { ok: false; error: ActionError };
 ```
 
 ```ts
 // packages/domain/src/uploads.ts
-import { z } from "zod";
+import { z } from 'zod';
 
 export const MAX_UPLOAD_BYTES = 50 * 1024 * 1024;
 export const MAX_UPLOAD_BATCH = 20;
-export const DOCUMENT_ORIGINALS_BUCKET = "originals";
+export const DOCUMENT_ORIGINALS_BUCKET = 'originals';
 export const ALLOWED_UPLOADS = {
-  ".jpg": ["image/jpeg"],
-  ".jpeg": ["image/jpeg"],
-  ".png": ["image/png"],
-  ".webp": ["image/webp"],
-  ".pdf": ["application/pdf"],
-  ".docx": ["application/vnd.openxmlformats-officedocument.wordprocessingml.document"],
-  ".md": ["text/markdown", "text/plain"],
-  ".txt": ["text/plain"],
+  '.jpg': ['image/jpeg'],
+  '.jpeg': ['image/jpeg'],
+  '.png': ['image/png'],
+  '.webp': ['image/webp'],
+  '.pdf': ['application/pdf'],
+  '.docx': ['application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
+  '.md': ['text/markdown', 'text/plain'],
+  '.txt': ['text/plain'],
 } as const;
 
-export const UploadFileInputSchema = z.object({
-  name: z.string().trim().min(1).max(255),
-  size: z.number().int().positive().max(MAX_UPLOAD_BYTES, "单文件不能超过 50 MB"),
-  declaredMime: z.string().trim().min(1),
-}).superRefine((file, context) => {
-  const suffix = file.name.slice(file.name.lastIndexOf(".")).toLowerCase() as keyof typeof ALLOWED_UPLOADS;
-  const allowed = ALLOWED_UPLOADS[suffix] as readonly string[] | undefined;
-  if (!allowed?.includes(file.declaredMime)) {
-    context.addIssue({ code: "custom", message: "不支持此文件格式" });
-  }
-});
+export const UploadFileInputSchema = z
+  .object({
+    name: z.string().trim().min(1).max(255),
+    size: z.number().int().positive().max(MAX_UPLOAD_BYTES, '单文件不能超过 50 MB'),
+    declaredMime: z.string().trim().min(1),
+  })
+  .superRefine((file, context) => {
+    const suffix = file.name
+      .slice(file.name.lastIndexOf('.'))
+      .toLowerCase() as keyof typeof ALLOWED_UPLOADS;
+    const allowed = ALLOWED_UPLOADS[suffix] as readonly string[] | undefined;
+    if (!allowed?.includes(file.declaredMime)) {
+      context.addIssue({ code: 'custom', message: '不支持此文件格式' });
+    }
+  });
 export type UploadFileInput = z.infer<typeof UploadFileInputSchema>;
 
 export const CreateUploadSessionsInputSchema = z.object({
   workspaceId: z.string().uuid(),
-  files: z.array(UploadFileInputSchema).min(1).max(MAX_UPLOAD_BATCH, "单批最多上传 20 个文件"),
+  files: z.array(UploadFileInputSchema).min(1).max(MAX_UPLOAD_BATCH, '单批最多上传 20 个文件'),
 });
 export type CreateUploadSessionsInput = z.infer<typeof CreateUploadSessionsInputSchema>;
 
@@ -346,8 +362,8 @@ export function parseUploadBatch(input: unknown): CreateUploadSessionsInput {
 
 ```ts
 // packages/domain/src/index.ts
-export * from "./workspaces";
-export * from "./uploads";
+export * from './workspaces';
+export * from './uploads';
 ```
 
 ```json
@@ -369,8 +385,8 @@ export * from "./uploads";
 
 ```ts
 // vitest.workspace.ts
-import { defineWorkspace } from "vitest/config";
-export default defineWorkspace(["packages/*/vitest.config.ts", "apps/*/vitest.config.ts"]);
+import { defineWorkspace } from 'vitest/config';
+export default defineWorkspace(['packages/*/vitest.config.ts', 'apps/*/vitest.config.ts']);
 ```
 
 ```json
@@ -384,8 +400,8 @@ export default defineWorkspace(["packages/*/vitest.config.ts", "apps/*/vitest.co
 
 ```ts
 // packages/domain/vitest.config.ts
-import { defineConfig } from "vitest/config";
-export default defineConfig({ test: { environment: "node", include: ["src/**/*.test.ts"] } });
+import { defineConfig } from 'vitest/config';
+export default defineConfig({ test: { environment: 'node', include: ['src/**/*.test.ts'] } });
 ```
 
 - [ ] **Step 4: 运行领域测试和类型检查**
@@ -404,12 +420,14 @@ git commit -m "chore: bootstrap knowledge workspace contracts"
 ### Task 2: Create Identity, Workspace, and Single-Owner Database Invariants
 
 **Files:**
+
 - Create: `supabase/config.toml`
 - Create: `supabase/migrations/0001_extensions.sql`
 - Create: `supabase/migrations/0002_identity_workspaces.sql`
 - Test: `supabase/tests/0002_identity_workspaces.test.sql`
 
 **Interfaces:**
+
 - Consumes: `WorkspaceRole` and `WorkspaceKind` string values from Task 1.
 - Produces: tables `profiles`, `workspaces`, `memberships`, `invitations`, `audit_events`; enums `workspace_role`, `workspace_kind`, `workspace_state`, `membership_status`; trigger `private.handle_new_user()`; invariant function `private.assert_single_workspace_owner(uuid)`.
 
@@ -682,12 +700,14 @@ git commit -m "feat: add workspace identity invariants"
 ### Task 3: Enforce the Four-Role Matrix with RLS and Audited RPCs
 
 **Files:**
+
 - Create: `supabase/migrations/0003_workspace_access.sql`
 - Create: `supabase/tests/0003_workspace_access.test.sql`
 - Create: `packages/domain/src/database.types.ts` (generated)
 - Modify: `packages/domain/src/index.ts`
 
 **Interfaces:**
+
 - Consumes: tables and enums from Task 2; `Capability` string values from `@knowledge/domain`.
 - Produces: `public.has_workspace_capability(uuid, app_capability): boolean`; `public.assert_workspace_capability(uuid, app_capability)` returning `workspace_id, user_id, role, kind`; `public.resolve_entry_workspace(): uuid`; RPCs `create_team_workspace`, `set_last_workspace`, `create_invitation`, `accept_invitation`, `revoke_invitation`, `change_member_role`, `remove_member`, `leave_workspace`, `transfer_workspace_ownership`.
 
@@ -1111,7 +1131,7 @@ After type generation, append the shared type-only export so Web and Worker use 
 
 ```ts
 // packages/domain/src/index.ts
-export type { Database } from "./database.types";
+export type { Database } from './database.types';
 ```
 
 - [ ] **Step 6: 重建数据库、运行全部数据库测试并生成类型**
@@ -1130,6 +1150,7 @@ git commit -m "feat: enforce workspace rbac and rls"
 ### Task 4: Add SSR Authentication, Login Entry, and the Shared Permission Gate
 
 **Files:**
+
 - Create: `.env.example`
 - Create: `apps/web/package.json`
 - Create: `apps/web/tsconfig.json`
@@ -1153,6 +1174,7 @@ git commit -m "feat: enforce workspace rbac and rls"
 - Test: `apps/web/src/lib/workspaces/access.test.ts`
 
 **Interfaces:**
+
 - Consumes: `ActionResult<T>`, `Capability`, `WorkspaceContext`, `WorkspaceContextSchema`; generated `Database`; RPCs `assert_workspace_capability` and `resolve_entry_workspace`.
 - Produces: `createBrowserSupabaseClient(): SupabaseClient<Database>`; `createServerSupabaseClient(): Promise<SupabaseClient<Database>>`; `requireWorkspaceCapability(client: SupabaseClient<Database>, workspaceId: string, capability: Capability): Promise<WorkspaceContext>`; `requestEmailOtp(auth, input): Promise<ActionResult<undefined>>`; `beginGoogleSignIn(auth, input): Promise<ActionResult<{ url: string }>>`.
 
@@ -1215,34 +1237,38 @@ git commit -m "feat: enforce workspace rbac and rls"
 
 ```ts
 // apps/web/next.config.ts
-import type { NextConfig } from "next";
+import type { NextConfig } from 'next';
 const nextConfig: NextConfig = { reactStrictMode: true, poweredByHeader: false };
 export default nextConfig;
 ```
 
 ```js
 // apps/web/postcss.config.mjs
-export default { plugins: { "@tailwindcss/postcss": {} } };
+export default { plugins: { '@tailwindcss/postcss': {} } };
 ```
 
 ```ts
 // apps/web/vitest.config.ts
-import { fileURLToPath } from "node:url";
-import { defineConfig } from "vitest/config";
+import { fileURLToPath } from 'node:url';
+import { defineConfig } from 'vitest/config';
 export default defineConfig({
-  resolve: { alias: { "@": fileURLToPath(new URL("./src", import.meta.url)) } },
-  test: { environment: "jsdom", setupFiles: ["./src/test/setup.ts"], include: ["src/**/*.test.{ts,tsx}"] },
+  resolve: { alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) } },
+  test: {
+    environment: 'jsdom',
+    setupFiles: ['./src/test/setup.ts'],
+    include: ['src/**/*.test.{ts,tsx}'],
+  },
 });
 ```
 
 ```ts
 // apps/web/src/test/setup.ts
-import "@testing-library/jest-dom/vitest";
+import '@testing-library/jest-dom/vitest';
 ```
 
 ```ts
 // apps/web/src/lib/env.ts
-import { z } from "zod";
+import { z } from 'zod';
 
 const publicSchema = z.object({
   NEXT_PUBLIC_SUPABASE_URL: z.string().url(),
@@ -1255,36 +1281,46 @@ const serverSchema = publicSchema.extend({
   INVITATION_EMAIL_FROM: z.string().min(3),
 });
 
-export function getPublicEnv() { return publicSchema.parse(process.env); }
-export function getServerEnv() { return serverSchema.parse(process.env); }
+export function getPublicEnv() {
+  return publicSchema.parse(process.env);
+}
+export function getServerEnv() {
+  return serverSchema.parse(process.env);
+}
 ```
 
 ```ts
 // apps/web/src/features/auth/service.test.ts
-import { describe, expect, it, vi } from "vitest";
-import { beginGoogleSignIn, requestEmailOtp, type AuthGateway } from "./service";
+import { describe, expect, it, vi } from 'vitest';
+import { beginGoogleSignIn, requestEmailOtp, type AuthGateway } from './service';
 
-describe("auth service", () => {
-  it("sends email OTP to the callback and starts Google without persisting provider state", async () => {
+describe('auth service', () => {
+  it('sends email OTP to the callback and starts Google without persisting provider state', async () => {
     const auth: AuthGateway = {
       signInWithOtp: vi.fn().mockResolvedValue({ error: null }),
-      signInWithOAuth: vi.fn().mockResolvedValue({ data: { url: "https://accounts.google.test/oauth" }, error: null }),
+      signInWithOAuth: vi
+        .fn()
+        .mockResolvedValue({ data: { url: 'https://accounts.google.test/oauth' }, error: null }),
       exchangeCodeForSession: vi.fn(),
     };
-    await expect(requestEmailOtp(auth, {
-      email: "person@example.test",
-      callbackUrl: "https://app.example.test/auth/callback",
-    })).resolves.toEqual({ ok: true, data: undefined });
+    await expect(
+      requestEmailOtp(auth, {
+        email: 'person@example.test',
+        callbackUrl: 'https://app.example.test/auth/callback',
+      })
+    ).resolves.toEqual({ ok: true, data: undefined });
     expect(auth.signInWithOtp).toHaveBeenCalledWith({
-      email: "person@example.test",
-      options: { emailRedirectTo: "https://app.example.test/auth/callback" },
+      email: 'person@example.test',
+      options: { emailRedirectTo: 'https://app.example.test/auth/callback' },
     });
-    await expect(beginGoogleSignIn(auth, {
-      callbackUrl: "https://app.example.test/auth/callback",
-    })).resolves.toEqual({ ok: true, data: { url: "https://accounts.google.test/oauth" } });
+    await expect(
+      beginGoogleSignIn(auth, {
+        callbackUrl: 'https://app.example.test/auth/callback',
+      })
+    ).resolves.toEqual({ ok: true, data: { url: 'https://accounts.google.test/oauth' } });
     expect(auth.signInWithOAuth).toHaveBeenCalledWith({
-      provider: "google",
-      options: { redirectTo: "https://app.example.test/auth/callback" },
+      provider: 'google',
+      options: { redirectTo: 'https://app.example.test/auth/callback' },
     });
   });
 });
@@ -1292,42 +1328,50 @@ describe("auth service", () => {
 
 ```ts
 // apps/web/src/lib/workspaces/access.test.ts
-import { describe, expect, it, vi } from "vitest";
-import { requireWorkspaceCapability } from "./access";
+import { describe, expect, it, vi } from 'vitest';
+import { requireWorkspaceCapability } from './access';
 
-describe("requireWorkspaceCapability", () => {
-  it("maps the database assertion to the stable cross-plan context", async () => {
+describe('requireWorkspaceCapability', () => {
+  it('maps the database assertion to the stable cross-plan context', async () => {
     const single = vi.fn().mockResolvedValue({
       data: {
-        workspace_id: "21000000-0000-4000-8000-000000000001",
-        user_id: "20000000-0000-4000-8000-000000000003",
-        role: "editor",
-        kind: "team",
+        workspace_id: '21000000-0000-4000-8000-000000000001',
+        user_id: '20000000-0000-4000-8000-000000000003',
+        role: 'editor',
+        kind: 'team',
       },
       error: null,
     });
     const client = { rpc: vi.fn().mockReturnValue({ single }) };
-    await expect(requireWorkspaceCapability(
-      client as never,
-      "21000000-0000-4000-8000-000000000001",
-      "documents.upload",
-    )).resolves.toEqual({
-      workspaceId: "21000000-0000-4000-8000-000000000001",
-      userId: "20000000-0000-4000-8000-000000000003",
-      role: "editor",
-      kind: "team",
+    await expect(
+      requireWorkspaceCapability(
+        client as never,
+        '21000000-0000-4000-8000-000000000001',
+        'documents.upload'
+      )
+    ).resolves.toEqual({
+      workspaceId: '21000000-0000-4000-8000-000000000001',
+      userId: '20000000-0000-4000-8000-000000000003',
+      role: 'editor',
+      kind: 'team',
     });
   });
 
-  it("does not replace a database denial with a client-side role guess", async () => {
-    const client = { rpc: vi.fn().mockReturnValue({
-      single: vi.fn().mockResolvedValue({ data: null, error: { code: "42501", message: "denied" } }),
-    }) };
-    await expect(requireWorkspaceCapability(
-      client as never,
-      "21000000-0000-4000-8000-000000000001",
-      "documents.upload",
-    )).rejects.toMatchObject({ code: "FORBIDDEN" });
+  it('does not replace a database denial with a client-side role guess', async () => {
+    const client = {
+      rpc: vi.fn().mockReturnValue({
+        single: vi
+          .fn()
+          .mockResolvedValue({ data: null, error: { code: '42501', message: 'denied' } }),
+      }),
+    };
+    await expect(
+      requireWorkspaceCapability(
+        client as never,
+        '21000000-0000-4000-8000-000000000001',
+        'documents.upload'
+      )
+    ).rejects.toMatchObject({ code: 'FORBIDDEN' });
   });
 });
 ```
@@ -1352,22 +1396,22 @@ INVITATION_EMAIL_FROM=
 
 ```ts
 // apps/web/src/lib/supabase/client.ts
-import { createBrowserClient } from "@supabase/ssr";
-import type { Database } from "@knowledge/domain";
+import { createBrowserClient } from '@supabase/ssr';
+import type { Database } from '@knowledge/domain';
 
 export function createBrowserSupabaseClient() {
   return createBrowserClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!
   );
 }
 ```
 
 ```ts
 // apps/web/src/lib/supabase/server.ts
-import { createServerClient } from "@supabase/ssr";
-import { cookies } from "next/headers";
-import type { Database } from "@knowledge/domain";
+import { createServerClient } from '@supabase/ssr';
+import { cookies } from 'next/headers';
+import type { Database } from '@knowledge/domain';
 
 export async function createServerSupabaseClient() {
   const cookieStore = await cookies();
@@ -1385,16 +1429,16 @@ export async function createServerSupabaseClient() {
           }
         },
       },
-    },
+    }
   );
 }
 ```
 
 ```ts
 // apps/web/src/lib/supabase/proxy.ts
-import { createServerClient } from "@supabase/ssr";
-import { NextResponse, type NextRequest } from "next/server";
-import type { Database } from "@knowledge/domain";
+import { createServerClient } from '@supabase/ssr';
+import { NextResponse, type NextRequest } from 'next/server';
+import type { Database } from '@knowledge/domain';
 
 export async function refreshAuthSession(request: NextRequest) {
   let response = NextResponse.next({ request });
@@ -1410,14 +1454,19 @@ export async function refreshAuthSession(request: NextRequest) {
           items.forEach(({ name, value, options }) => response.cookies.set(name, value, options));
         },
       },
-    },
+    }
   );
-  const { data: { user } } = await client.auth.getUser();
-  const protectedPath = request.nextUrl.pathname === "/" || request.nextUrl.pathname.startsWith("/w/") || request.nextUrl.pathname.startsWith("/workspaces/");
+  const {
+    data: { user },
+  } = await client.auth.getUser();
+  const protectedPath =
+    request.nextUrl.pathname === '/' ||
+    request.nextUrl.pathname.startsWith('/w/') ||
+    request.nextUrl.pathname.startsWith('/workspaces/');
   if (!user && protectedPath) {
     const login = request.nextUrl.clone();
-    login.pathname = "/login";
-    login.searchParams.set("next", request.nextUrl.pathname + request.nextUrl.search);
+    login.pathname = '/login';
+    login.searchParams.set('next', request.nextUrl.pathname + request.nextUrl.search);
     return NextResponse.redirect(login);
   }
   return response;
@@ -1426,15 +1475,15 @@ export async function refreshAuthSession(request: NextRequest) {
 
 ```ts
 // apps/web/src/proxy.ts
-import type { NextRequest } from "next/server";
-import { refreshAuthSession } from "@/lib/supabase/proxy";
+import type { NextRequest } from 'next/server';
+import { refreshAuthSession } from '@/lib/supabase/proxy';
 
 export function proxy(request: NextRequest) {
   return refreshAuthSession(request);
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)"],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)'],
 };
 ```
 
@@ -1442,24 +1491,26 @@ export const config = {
 
 ```ts
 // apps/web/src/lib/workspaces/access.ts
-import type { SupabaseClient } from "@supabase/supabase-js";
-import { WorkspaceContextSchema, type Capability, type WorkspaceContext } from "@knowledge/domain";
-import type { Database } from "@knowledge/domain";
+import type { SupabaseClient } from '@supabase/supabase-js';
+import { WorkspaceContextSchema, type Capability, type WorkspaceContext } from '@knowledge/domain';
+import type { Database } from '@knowledge/domain';
 
 export class WorkspaceAccessError extends Error {
-  readonly code = "FORBIDDEN" as const;
+  readonly code = 'FORBIDDEN' as const;
 }
 
 export async function requireWorkspaceCapability(
   client: SupabaseClient<Database>,
   workspaceId: string,
-  capability: Capability,
+  capability: Capability
 ): Promise<WorkspaceContext> {
-  const { data, error } = await client.rpc("assert_workspace_capability", {
-    target_workspace_id: workspaceId,
-    requested_capability: capability,
-  }).single();
-  if (error || !data) throw new WorkspaceAccessError("你已无权访问此工作区或执行此操作");
+  const { data, error } = await client
+    .rpc('assert_workspace_capability', {
+      target_workspace_id: workspaceId,
+      requested_capability: capability,
+    })
+    .single();
+  if (error || !data) throw new WorkspaceAccessError('你已无权访问此工作区或执行此操作');
   return WorkspaceContextSchema.parse({
     workspaceId: data.workspace_id,
     userId: data.user_id,
@@ -1471,34 +1522,46 @@ export async function requireWorkspaceCapability(
 
 ```ts
 // apps/web/src/features/auth/service.ts
-import { z } from "zod";
-import type { ActionResult } from "@knowledge/domain";
+import { z } from 'zod';
+import type { ActionResult } from '@knowledge/domain';
 
 type AuthError = { message: string };
 export type AuthGateway = {
-  signInWithOtp(input: { email: string; options: { emailRedirectTo: string } }): Promise<{ error: AuthError | null }>;
-  signInWithOAuth(input: { provider: "google"; options: { redirectTo: string } }): Promise<{ data: { url: string | null }; error: AuthError | null }>;
+  signInWithOtp(input: {
+    email: string;
+    options: { emailRedirectTo: string };
+  }): Promise<{ error: AuthError | null }>;
+  signInWithOAuth(input: {
+    provider: 'google';
+    options: { redirectTo: string };
+  }): Promise<{ data: { url: string | null }; error: AuthError | null }>;
   exchangeCodeForSession(code: string): Promise<{ error: AuthError | null }>;
 };
 
 export async function requestEmailOtp(
   auth: AuthGateway,
-  input: { email: string; callbackUrl: string },
+  input: { email: string; callbackUrl: string }
 ): Promise<ActionResult<undefined>> {
   const email = z.string().email().parse(input.email).toLowerCase();
-  const { error } = await auth.signInWithOtp({ email, options: { emailRedirectTo: input.callbackUrl } });
+  const { error } = await auth.signInWithOtp({
+    email,
+    options: { emailRedirectTo: input.callbackUrl },
+  });
   return error
-    ? { ok: false, error: { code: "DEPENDENCY_FAILED", message: "验证码邮件发送失败，请稍后重试" } }
+    ? { ok: false, error: { code: 'DEPENDENCY_FAILED', message: '验证码邮件发送失败，请稍后重试' } }
     : { ok: true, data: undefined };
 }
 
 export async function beginGoogleSignIn(
   auth: AuthGateway,
-  input: { callbackUrl: string },
+  input: { callbackUrl: string }
 ): Promise<ActionResult<{ url: string }>> {
-  const { data, error } = await auth.signInWithOAuth({ provider: "google", options: { redirectTo: input.callbackUrl } });
+  const { data, error } = await auth.signInWithOAuth({
+    provider: 'google',
+    options: { redirectTo: input.callbackUrl },
+  });
   return error || !data.url
-    ? { ok: false, error: { code: "DEPENDENCY_FAILED", message: "Google 登录暂时不可用" } }
+    ? { ok: false, error: { code: 'DEPENDENCY_FAILED', message: 'Google 登录暂时不可用' } }
     : { ok: true, data: { url: data.url } };
 }
 ```
@@ -1507,37 +1570,42 @@ export async function beginGoogleSignIn(
 
 ```ts
 // apps/web/src/features/auth/actions.ts
-"use server";
-import { redirect } from "next/navigation";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { beginGoogleSignIn, requestEmailOtp } from "./service";
+'use server';
+import { redirect } from 'next/navigation';
+import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { beginGoogleSignIn, requestEmailOtp } from './service';
 
-export type LoginState = { status: "idle" | "sent" | "error"; message: string };
+export type LoginState = { status: 'idle' | 'sent' | 'error'; message: string };
 function safeNext(value: FormDataEntryValue | null): string {
-  const next = typeof value === "string" ? value : "/";
-  return next.startsWith("/") && !next.startsWith("//") ? next : "/";
+  const next = typeof value === 'string' ? value : '/';
+  return next.startsWith('/') && !next.startsWith('//') ? next : '/';
 }
 function callbackUrl(next: string): string {
-  const url = new URL("/auth/callback", process.env.APP_URL);
-  url.searchParams.set("next", next);
+  const url = new URL('/auth/callback', process.env.APP_URL);
+  url.searchParams.set('next', next);
   return url.toString();
 }
 
-export async function requestEmailOtpAction(_state: LoginState, formData: FormData): Promise<LoginState> {
+export async function requestEmailOtpAction(
+  _state: LoginState,
+  formData: FormData
+): Promise<LoginState> {
   const client = await createServerSupabaseClient();
-  const next = safeNext(formData.get("next"));
+  const next = safeNext(formData.get('next'));
   const result = await requestEmailOtp(client.auth, {
-    email: String(formData.get("email") ?? ""),
+    email: String(formData.get('email') ?? ''),
     callbackUrl: callbackUrl(next),
   });
   return result.ok
-    ? { status: "sent", message: "登录链接已发送，请检查邮箱。" }
-    : { status: "error", message: result.error.message };
+    ? { status: 'sent', message: '登录链接已发送，请检查邮箱。' }
+    : { status: 'error', message: result.error.message };
 }
 
 export async function signInWithGoogleAction(formData: FormData): Promise<never> {
   const client = await createServerSupabaseClient();
-  const result = await beginGoogleSignIn(client.auth, { callbackUrl: callbackUrl(safeNext(formData.get("next"))) });
+  const result = await beginGoogleSignIn(client.auth, {
+    callbackUrl: callbackUrl(safeNext(formData.get('next'))),
+  });
   if (!result.ok) redirect(`/login?error=${encodeURIComponent(result.error.message)}`);
   redirect(result.data.url);
 }
@@ -1545,82 +1613,124 @@ export async function signInWithGoogleAction(formData: FormData): Promise<never>
 
 ```ts
 // apps/web/src/app/auth/callback/route.ts
-import { NextResponse, type NextRequest } from "next/server";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { NextResponse, type NextRequest } from 'next/server';
+import { createServerSupabaseClient } from '@/lib/supabase/server';
 
 export async function GET(request: NextRequest) {
-  const code = request.nextUrl.searchParams.get("code");
-  const requestedNext = request.nextUrl.searchParams.get("next") ?? "/";
-  const safeNext = requestedNext.startsWith("/") && !requestedNext.startsWith("//") ? requestedNext : "/";
-  if (!code) return NextResponse.redirect(new URL("/login?error=missing_code", request.url));
+  const code = request.nextUrl.searchParams.get('code');
+  const requestedNext = request.nextUrl.searchParams.get('next') ?? '/';
+  const safeNext =
+    requestedNext.startsWith('/') && !requestedNext.startsWith('//') ? requestedNext : '/';
+  if (!code) return NextResponse.redirect(new URL('/login?error=missing_code', request.url));
   const client = await createServerSupabaseClient();
   const { error } = await client.auth.exchangeCodeForSession(code);
-  return NextResponse.redirect(new URL(error ? "/login?error=session_exchange" : safeNext, request.url));
+  return NextResponse.redirect(
+    new URL(error ? '/login?error=session_exchange' : safeNext, request.url)
+  );
 }
 ```
 
 ```tsx
 // apps/web/src/app/page.tsx
-import { redirect } from "next/navigation";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { redirect } from 'next/navigation';
+import { createServerSupabaseClient } from '@/lib/supabase/server';
 
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 export default async function EntryPage() {
   const client = await createServerSupabaseClient();
-  const { data: { user } } = await client.auth.getUser();
-  if (!user) redirect("/login");
-  const { data: workspaceId, error } = await client.rpc("resolve_entry_workspace");
-  if (error || !workspaceId) throw new Error("无法确定可访问的工作区");
+  const {
+    data: { user },
+  } = await client.auth.getUser();
+  if (!user) redirect('/login');
+  const { data: workspaceId, error } = await client.rpc('resolve_entry_workspace');
+  if (error || !workspaceId) throw new Error('无法确定可访问的工作区');
   redirect(`/w/${workspaceId}/library`);
 }
 ```
 
 ```tsx
 // apps/web/src/features/auth/login-form.tsx
-"use client";
-import { useActionState } from "react";
-import { requestEmailOtpAction, signInWithGoogleAction, type LoginState } from "./actions";
+'use client';
+import { useActionState } from 'react';
+import { requestEmailOtpAction, signInWithGoogleAction, type LoginState } from './actions';
 
-const initialState: LoginState = { status: "idle", message: "" };
+const initialState: LoginState = { status: 'idle', message: '' };
 export function LoginForm({ next }: { next: string }) {
   const [state, action, pending] = useActionState(requestEmailOtpAction, initialState);
-  return <div className="w-full max-w-sm">
-    <form action={action} className="space-y-4">
-      <input type="hidden" name="next" value={next} />
-      <label className="block text-sm font-medium" htmlFor="email">邮箱</label>
-      <input id="email" name="email" type="email" required autoComplete="email" className="min-h-11 w-full rounded-[6px] border border-[var(--line)] px-3" />
-      <button disabled={pending} className="min-h-11 w-full rounded-[6px] bg-[var(--accent)] px-4 text-white">{pending ? "正在发送" : "发送登录链接"}</button>
-      <p aria-live="polite" className={state.status === "error" ? "text-sm text-red-700" : "text-sm text-[var(--muted)]"}>{state.message}</p>
-    </form>
-    <div className="my-5 border-t border-[var(--line)]" />
-    <form action={signInWithGoogleAction}>
-      <input type="hidden" name="next" value={next} />
-      <button className="min-h-11 w-full rounded-[6px] border border-[var(--line)] px-4">使用 Google 登录</button>
-    </form>
-  </div>;
+  return (
+    <div className="w-full max-w-sm">
+      <form action={action} className="space-y-4">
+        <input type="hidden" name="next" value={next} />
+        <label className="block text-sm font-medium" htmlFor="email">
+          邮箱
+        </label>
+        <input
+          id="email"
+          name="email"
+          type="email"
+          required
+          autoComplete="email"
+          className="min-h-11 w-full rounded-[6px] border border-[var(--line)] px-3"
+        />
+        <button
+          disabled={pending}
+          className="min-h-11 w-full rounded-[6px] bg-[var(--accent)] px-4 text-white"
+        >
+          {pending ? '正在发送' : '发送登录链接'}
+        </button>
+        <p
+          aria-live="polite"
+          className={
+            state.status === 'error' ? 'text-sm text-red-700' : 'text-sm text-[var(--muted)]'
+          }
+        >
+          {state.message}
+        </p>
+      </form>
+      <div className="my-5 border-t border-[var(--line)]" />
+      <form action={signInWithGoogleAction}>
+        <input type="hidden" name="next" value={next} />
+        <button className="min-h-11 w-full rounded-[6px] border border-[var(--line)] px-4">
+          使用 Google 登录
+        </button>
+      </form>
+    </div>
+  );
 }
 ```
 
 ```tsx
 // apps/web/src/app/(auth)/login/page.tsx
-import { LoginForm } from "@/features/auth/login-form";
+import { LoginForm } from '@/features/auth/login-form';
 
 function safeNext(value: string | string[] | undefined) {
-  const next = typeof value === "string" ? value : "/";
-  return next.startsWith("/") && !next.startsWith("//") ? next : "/";
+  const next = typeof value === 'string' ? value : '/';
+  return next.startsWith('/') && !next.startsWith('//') ? next : '/';
 }
 
-export default async function LoginPage({ searchParams }: { searchParams: Promise<{ next?: string | string[]; error?: string }> }) {
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ next?: string | string[]; error?: string }>;
+}) {
   const query = await searchParams;
-  return <main className="grid min-h-dvh place-items-center bg-[var(--canvas)] p-6">
-    <section className="w-full max-w-sm" aria-labelledby="login-title">
-      <h1 id="login-title" className="text-3xl font-semibold tracking-[-0.03em]">进入知识工作台</h1>
-      <p className="mb-7 mt-2 text-sm text-[var(--muted)]">使用邮箱验证码或 Google 登录。</p>
-      <LoginForm next={safeNext(query.next)} />
-      {query.error && <p role="alert" className="mt-4 text-sm text-red-700">登录未完成，请重试。</p>}
-    </section>
-  </main>;
+  return (
+    <main className="grid min-h-dvh place-items-center bg-[var(--canvas)] p-6">
+      <section className="w-full max-w-sm" aria-labelledby="login-title">
+        <h1 id="login-title" className="text-3xl font-semibold tracking-[-0.03em]">
+          进入知识工作台
+        </h1>
+        <p className="mb-7 mt-2 text-sm text-[var(--muted)]">使用邮箱验证码或 Google 登录。</p>
+        <LoginForm next={safeNext(query.next)} />
+        {query.error && (
+          <p role="alert" className="mt-4 text-sm text-red-700">
+            登录未完成，请重试。
+          </p>
+        )}
+      </section>
+    </main>
+  );
 }
 ```
 
@@ -1640,6 +1750,7 @@ git commit -m "feat: add private workspace authentication entry"
 ### Task 5: Build the Notion-Inspired Responsive Workspace Shell
 
 **Files:**
+
 - Create: `apps/web/src/app/globals.css`
 - Create: `apps/web/src/app/layout.tsx`
 - Create: `apps/web/public/illustrations/first-upload.png`
@@ -1660,6 +1771,7 @@ git commit -m "feat: add private workspace authentication entry"
 - Test: `apps/web/src/components/ui/empty-state.test.tsx`
 
 **Interfaces:**
+
 - Consumes: `requireWorkspaceCapability(...)`, `WorkspaceContext`, `createServerSupabaseClient()`, RPC `set_last_workspace`.
 - Produces: `WorkspaceSummary = { id: string; name: string; kind: WorkspaceKind; role: WorkspaceRole }`; `listAccessibleWorkspaces(client): Promise<WorkspaceSummary[]>`; `setLastWorkspaceAction(workspaceId: string): Promise<ActionResult<undefined>>`; `AppShellProps = { context: WorkspaceContext; workspaces: WorkspaceSummary[]; children: ReactNode }`.
 
@@ -1667,41 +1779,59 @@ git commit -m "feat: add private workspace authentication entry"
 
 ```tsx
 // apps/web/src/components/shell/app-shell.test.tsx
-import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
-import { AppShell } from "./app-shell";
+import { render, screen } from '@testing-library/react';
+import { describe, expect, it } from 'vitest';
+import { AppShell } from './app-shell';
 
 const context = {
-  workspaceId: "21000000-0000-4000-8000-000000000001",
-  userId: "20000000-0000-4000-8000-000000000001",
-  role: "owner" as const,
-  kind: "team" as const,
+  workspaceId: '21000000-0000-4000-8000-000000000001',
+  userId: '20000000-0000-4000-8000-000000000001',
+  role: 'owner' as const,
+  kind: 'team' as const,
 };
 
-describe("AppShell", () => {
-  it("renders task navigation and an accessible mobile drawer control", () => {
-    render(<AppShell context={context} workspaces={[{ id: context.workspaceId, name: "Team One", kind: "team", role: "owner" }]}><p>内容</p></AppShell>);
-    expect(screen.getByRole("button", { name: "打开侧栏" })).toBeVisible();
-    expect(screen.getByRole("link", { name: "资料库" })).toHaveAttribute("href", `/w/${context.workspaceId}/library`);
-    expect(screen.getByRole("link", { name: "知识图谱" })).toBeVisible();
-    expect(screen.getByRole("link", { name: "私密对话" })).toBeVisible();
-    expect(screen.getByText("内容")).toBeVisible();
+describe('AppShell', () => {
+  it('renders task navigation and an accessible mobile drawer control', () => {
+    render(
+      <AppShell
+        context={context}
+        workspaces={[{ id: context.workspaceId, name: 'Team One', kind: 'team', role: 'owner' }]}
+      >
+        <p>内容</p>
+      </AppShell>
+    );
+    expect(screen.getByRole('button', { name: '打开侧栏' })).toBeVisible();
+    expect(screen.getByRole('link', { name: '资料库' })).toHaveAttribute(
+      'href',
+      `/w/${context.workspaceId}/library`
+    );
+    expect(screen.getByRole('link', { name: '知识图谱' })).toBeVisible();
+    expect(screen.getByRole('link', { name: '私密对话' })).toBeVisible();
+    expect(screen.getByText('内容')).toBeVisible();
   });
 });
 ```
 
 ```tsx
 // apps/web/src/components/ui/empty-state.test.tsx
-import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
-import { EmptyState } from "./empty-state";
+import { render, screen } from '@testing-library/react';
+import { describe, expect, it } from 'vitest';
+import { EmptyState } from './empty-state';
 
-describe("EmptyState", () => {
-  it("never relies on illustration alone", () => {
-    render(<EmptyState imageSrc="/illustrations/first-upload.png" imageAlt="人物把第一份资料放入档案盒" title="放入第一份资料" description="上传后可以离开，系统会继续处理。" action={<button>上传资料</button>} />);
-    expect(screen.getByRole("img", { name: "人物把第一份资料放入档案盒" })).toBeVisible();
-    expect(screen.getByRole("heading", { name: "放入第一份资料" })).toBeVisible();
-    expect(screen.getByRole("button", { name: "上传资料" })).toBeVisible();
+describe('EmptyState', () => {
+  it('never relies on illustration alone', () => {
+    render(
+      <EmptyState
+        imageSrc="/illustrations/first-upload.png"
+        imageAlt="人物把第一份资料放入档案盒"
+        title="放入第一份资料"
+        description="上传后可以离开，系统会继续处理。"
+        action={<button>上传资料</button>}
+      />
+    );
+    expect(screen.getByRole('img', { name: '人物把第一份资料放入档案盒' })).toBeVisible();
+    expect(screen.getByRole('heading', { name: '放入第一份资料' })).toBeVisible();
+    expect(screen.getByRole('button', { name: '上传资料' })).toBeVisible();
   });
 });
 ```
@@ -1725,7 +1855,7 @@ cp docs/superpowers/assets/illustration-grounded-chat.png apps/web/public/illust
 
 ```css
 /* apps/web/src/app/globals.css */
-@import "tailwindcss";
+@import 'tailwindcss';
 
 :root {
   --canvas: #fffefc;
@@ -1738,71 +1868,163 @@ cp docs/superpowers/assets/illustration-grounded-chat.png apps/web/public/illust
   --radius-control: 6px;
   color: var(--text);
   background: var(--canvas);
-  font-family: Geist, "PingFang SC", "Microsoft YaHei", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family:
+    Geist,
+    'PingFang SC',
+    'Microsoft YaHei',
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    sans-serif;
 }
 
-* { box-sizing: border-box; }
-body { margin: 0; min-width: 320px; background: var(--canvas); }
-button, input, select { font: inherit; }
-:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-.icon-button { min-width: 44px; min-height: 44px; display: inline-grid; place-items: center; border-radius: var(--radius-control); }
-.workspace-grid { min-height: 100dvh; display: grid; grid-template-columns: 248px minmax(0, 1fr); }
-.workspace-sidebar { background: var(--sidebar); border-right: 1px solid var(--line); padding: 10px 8px; }
-.workspace-main { min-width: 0; }
-.page-content { width: min(100% - 32px, 1120px); margin: 0 auto; padding: 56px 0 96px; }
-.mobile-bar { display: none; }
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  min-width: 320px;
+  background: var(--canvas);
+}
+button,
+input,
+select {
+  font: inherit;
+}
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.icon-button {
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: var(--radius-control);
+}
+.workspace-grid {
+  min-height: 100dvh;
+  display: grid;
+  grid-template-columns: 248px minmax(0, 1fr);
+}
+.workspace-sidebar {
+  background: var(--sidebar);
+  border-right: 1px solid var(--line);
+  padding: 10px 8px;
+}
+.workspace-main {
+  min-width: 0;
+}
+.page-content {
+  width: min(100% - 32px, 1120px);
+  margin: 0 auto;
+  padding: 56px 0 96px;
+}
+.mobile-bar {
+  display: none;
+}
 @media (max-width: 767px) {
-  .workspace-grid { display: block; }
-  .workspace-sidebar { position: fixed; z-index: 30; inset: 0 auto 0 0; width: min(88vw, 320px); transform: translateX(-100%); box-shadow: 0 12px 32px rgb(55 53 47 / 16%); transition: transform 160ms ease; }
-  .workspace-sidebar[data-open="true"] { transform: translateX(0); }
-  .mobile-bar { display: flex; align-items: center; min-height: 52px; padding: 4px 8px; border-bottom: 1px solid var(--line); }
-  .page-content { width: min(100% - 24px, 1120px); padding-top: 32px; }
+  .workspace-grid {
+    display: block;
+  }
+  .workspace-sidebar {
+    position: fixed;
+    z-index: 30;
+    inset: 0 auto 0 0;
+    width: min(88vw, 320px);
+    transform: translateX(-100%);
+    box-shadow: 0 12px 32px rgb(55 53 47 / 16%);
+    transition: transform 160ms ease;
+  }
+  .workspace-sidebar[data-open='true'] {
+    transform: translateX(0);
+  }
+  .mobile-bar {
+    display: flex;
+    align-items: center;
+    min-height: 52px;
+    padding: 4px 8px;
+    border-bottom: 1px solid var(--line);
+  }
+  .page-content {
+    width: min(100% - 24px, 1120px);
+    padding-top: 32px;
+  }
 }
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { scroll-behavior: auto !important; transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
 }
 ```
 
 ```tsx
 // apps/web/src/components/ui/app-icon.tsx
-import type { ComponentType, SVGProps } from "react";
+import type { ComponentType, SVGProps } from 'react';
 
 type RemixComponent = ComponentType<SVGProps<SVGSVGElement> & { size?: number }>;
 const sizes = { inline: 16, nav: 18, action: 20 } as const;
 
-export function AppIcon({ icon: Icon, size = "nav" }: { icon: RemixComponent; size?: keyof typeof sizes }) {
+export function AppIcon({
+  icon: Icon,
+  size = 'nav',
+}: {
+  icon: RemixComponent;
+  size?: keyof typeof sizes;
+}) {
   return <Icon aria-hidden="true" focusable="false" size={sizes[size]} />;
 }
 ```
 
 ```tsx
 // apps/web/src/components/ui/empty-state.tsx
-import Image from "next/image";
-import type { ReactNode } from "react";
+import Image from 'next/image';
+import type { ReactNode } from 'react';
 
-export function EmptyState(props: { imageSrc: string; imageAlt: string; title: string; description: string; action: ReactNode }) {
-  return <section aria-labelledby="empty-title" className="mx-auto flex max-w-xl flex-col items-center py-12 text-center">
-    <Image src={props.imageSrc} alt={props.imageAlt} width={362} height={272} priority />
-    <h1 id="empty-title" className="mt-5 text-2xl font-semibold tracking-[-0.02em]">{props.title}</h1>
-    <p className="mt-2 max-w-md text-sm leading-6 text-[var(--muted)]">{props.description}</p>
-    <div className="mt-5">{props.action}</div>
-  </section>;
+export function EmptyState(props: {
+  imageSrc: string;
+  imageAlt: string;
+  title: string;
+  description: string;
+  action: ReactNode;
+}) {
+  return (
+    <section
+      aria-labelledby="empty-title"
+      className="mx-auto flex max-w-xl flex-col items-center py-12 text-center"
+    >
+      <Image src={props.imageSrc} alt={props.imageAlt} width={362} height={272} priority />
+      <h1 id="empty-title" className="mt-5 text-2xl font-semibold tracking-[-0.02em]">
+        {props.title}
+      </h1>
+      <p className="mt-2 max-w-md text-sm leading-6 text-[var(--muted)]">{props.description}</p>
+      <div className="mt-5">{props.action}</div>
+    </section>
+  );
 }
 ```
 
 ```tsx
 // apps/web/src/app/layout.tsx
-import type { Metadata } from "next";
-import "./globals.css";
+import type { Metadata } from 'next';
+import './globals.css';
 
 export const metadata: Metadata = {
-  title: { default: "知识工作台", template: "%s · 知识工作台" },
-  description: "默认私密的个人与团队知识空间",
-  referrer: "strict-origin-when-cross-origin",
+  title: { default: '知识工作台', template: '%s · 知识工作台' },
+  description: '默认私密的个人与团队知识空间',
+  referrer: 'strict-origin-when-cross-origin',
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="zh-CN"><body>{children}</body></html>;
+  return (
+    <html lang="zh-CN">
+      <body>{children}</body>
+    </html>
+  );
 }
 ```
 
@@ -1810,20 +2032,27 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
 
 ```ts
 // apps/web/src/features/workspaces/queries.ts
-import type { SupabaseClient } from "@supabase/supabase-js";
-import type { WorkspaceKind, WorkspaceRole } from "@knowledge/domain";
-import type { Database } from "@knowledge/domain";
+import type { SupabaseClient } from '@supabase/supabase-js';
+import type { WorkspaceKind, WorkspaceRole } from '@knowledge/domain';
+import type { Database } from '@knowledge/domain';
 
-export type WorkspaceSummary = { id: string; name: string; kind: WorkspaceKind; role: WorkspaceRole };
+export type WorkspaceSummary = {
+  id: string;
+  name: string;
+  kind: WorkspaceKind;
+  role: WorkspaceRole;
+};
 
-export async function listAccessibleWorkspaces(client: SupabaseClient<Database>): Promise<WorkspaceSummary[]> {
+export async function listAccessibleWorkspaces(
+  client: SupabaseClient<Database>
+): Promise<WorkspaceSummary[]> {
   const { data, error } = await client
-    .from("memberships")
-    .select("role, workspaces!inner(id,name,kind,state)")
-    .eq("status", "active")
-    .eq("workspaces.state", "ACTIVE")
-    .order("joined_at", { ascending: true });
-  if (error) throw new Error("无法读取工作区");
+    .from('memberships')
+    .select('role, workspaces!inner(id,name,kind,state)')
+    .eq('status', 'active')
+    .eq('workspaces.state', 'ACTIVE')
+    .order('joined_at', { ascending: true });
+  if (error) throw new Error('无法读取工作区');
   return data.map((row) => ({
     id: row.workspaces.id,
     name: row.workspaces.name,
@@ -1835,86 +2064,152 @@ export async function listAccessibleWorkspaces(client: SupabaseClient<Database>)
 
 ```ts
 // apps/web/src/features/workspaces/actions.ts
-"use server";
-import { revalidatePath } from "next/cache";
-import type { ActionResult } from "@knowledge/domain";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
+'use server';
+import { revalidatePath } from 'next/cache';
+import type { ActionResult } from '@knowledge/domain';
+import { createServerSupabaseClient } from '@/lib/supabase/server';
 
-export async function setLastWorkspaceAction(workspaceId: string): Promise<ActionResult<undefined>> {
+export async function setLastWorkspaceAction(
+  workspaceId: string
+): Promise<ActionResult<undefined>> {
   const client = await createServerSupabaseClient();
-  const { error } = await client.rpc("set_last_workspace", { target_workspace_id: workspaceId });
-  if (error) return { ok: false, error: { code: "FORBIDDEN", message: "你已无法切换到这个工作区" } };
-  revalidatePath("/", "layout");
+  const { error } = await client.rpc('set_last_workspace', { target_workspace_id: workspaceId });
+  if (error)
+    return { ok: false, error: { code: 'FORBIDDEN', message: '你已无法切换到这个工作区' } };
+  revalidatePath('/', 'layout');
   return { ok: true, data: undefined };
 }
 ```
 
 ```tsx
 // apps/web/src/components/shell/workspace-switcher.tsx
-"use client";
-import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
-import type { WorkspaceSummary } from "@/features/workspaces/queries";
-import { setLastWorkspaceAction } from "@/features/workspaces/actions";
+'use client';
+import { useRouter } from 'next/navigation';
+import { useState, useTransition } from 'react';
+import type { WorkspaceSummary } from '@/features/workspaces/queries';
+import { setLastWorkspaceAction } from '@/features/workspaces/actions';
 
-export function WorkspaceSwitcher({ currentId, workspaces }: { currentId: string; workspaces: WorkspaceSummary[] }) {
+export function WorkspaceSwitcher({
+  currentId,
+  workspaces,
+}: {
+  currentId: string;
+  workspaces: WorkspaceSummary[];
+}) {
   const router = useRouter();
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
   const [pending, startTransition] = useTransition();
-  return <div>
-    <label className="sr-only" htmlFor="workspace-switcher">当前工作区</label>
-    <select id="workspace-switcher" value={currentId} disabled={pending} className="min-h-11 w-full rounded-[6px] bg-transparent px-2 font-medium"
-      onChange={(event) => {
-        const workspaceId = event.currentTarget.value;
-        startTransition(async () => {
-          const result = await setLastWorkspaceAction(workspaceId);
-          if (!result.ok) return setError(result.error.message);
-          router.push(`/w/${workspaceId}/library`);
-        });
-      }}>
-      {workspaces.map((workspace) => <option value={workspace.id} key={workspace.id}>{workspace.name}</option>)}
-    </select>
-    <p aria-live="polite" className="text-xs text-red-700">{error}</p>
-  </div>;
+  return (
+    <div>
+      <label className="sr-only" htmlFor="workspace-switcher">
+        当前工作区
+      </label>
+      <select
+        id="workspace-switcher"
+        value={currentId}
+        disabled={pending}
+        className="min-h-11 w-full rounded-[6px] bg-transparent px-2 font-medium"
+        onChange={(event) => {
+          const workspaceId = event.currentTarget.value;
+          startTransition(async () => {
+            const result = await setLastWorkspaceAction(workspaceId);
+            if (!result.ok) return setError(result.error.message);
+            router.push(`/w/${workspaceId}/library`);
+          });
+        }}
+      >
+        {workspaces.map((workspace) => (
+          <option value={workspace.id} key={workspace.id}>
+            {workspace.name}
+          </option>
+        ))}
+      </select>
+      <p aria-live="polite" className="text-xs text-red-700">
+        {error}
+      </p>
+    </div>
+  );
 }
 ```
 
 ```tsx
 // apps/web/src/components/shell/app-shell.tsx
-"use client";
-import Link from "next/link";
-import { useState, type ReactNode } from "react";
-import { RiBook2Line, RiChat3Line, RiCloseLine, RiMenuLine, RiNodeTree, RiQuestionAnswerLine, RiTeamLine } from "@remixicon/react";
-import type { WorkspaceContext } from "@knowledge/domain";
-import type { WorkspaceSummary } from "@/features/workspaces/queries";
-import { AppIcon } from "@/components/ui/app-icon";
-import { WorkspaceSwitcher } from "./workspace-switcher";
+'use client';
+import Link from 'next/link';
+import { useState, type ReactNode } from 'react';
+import {
+  RiBook2Line,
+  RiChat3Line,
+  RiCloseLine,
+  RiMenuLine,
+  RiNodeTree,
+  RiQuestionAnswerLine,
+  RiTeamLine,
+} from '@remixicon/react';
+import type { WorkspaceContext } from '@knowledge/domain';
+import type { WorkspaceSummary } from '@/features/workspaces/queries';
+import { AppIcon } from '@/components/ui/app-icon';
+import { WorkspaceSwitcher } from './workspace-switcher';
 
-export type AppShellProps = { context: WorkspaceContext; workspaces: WorkspaceSummary[]; children: ReactNode };
+export type AppShellProps = {
+  context: WorkspaceContext;
+  workspaces: WorkspaceSummary[];
+  children: ReactNode;
+};
 
 export function AppShell({ context, workspaces, children }: AppShellProps) {
   const [open, setOpen] = useState(false);
   const base = `/w/${context.workspaceId}`;
   const links = [
-    ["资料库", `${base}/library`, RiBook2Line],
-    ["知识图谱", `${base}/graph`, RiNodeTree],
-    ["私密对话", `${base}/chat`, RiChat3Line],
-    ["团队问答", `${base}/qa`, RiQuestionAnswerLine],
-    ["成员与邀请", `${base}/settings/members`, RiTeamLine],
+    ['资料库', `${base}/library`, RiBook2Line],
+    ['知识图谱', `${base}/graph`, RiNodeTree],
+    ['私密对话', `${base}/chat`, RiChat3Line],
+    ['团队问答', `${base}/qa`, RiQuestionAnswerLine],
+    ['成员与邀请', `${base}/settings/members`, RiTeamLine],
   ] as const;
-  return <div className="workspace-grid">
-    <header className="mobile-bar"><button className="icon-button" aria-label="打开侧栏" title="打开侧栏" onClick={() => setOpen(true)}><AppIcon icon={RiMenuLine} size="action" /></button></header>
-    <aside className="workspace-sidebar" data-open={open} aria-label="工作区侧栏">
-      <div className="flex items-center gap-1">
-        <div className="min-w-0 flex-1"><WorkspaceSwitcher currentId={context.workspaceId} workspaces={workspaces} /></div>
-        <button className="icon-button md:hidden" aria-label="关闭侧栏" title="关闭侧栏" onClick={() => setOpen(false)}><AppIcon icon={RiCloseLine} /></button>
-      </div>
-      <nav aria-label="主导航" className="mt-3 space-y-0.5">
-        {links.map(([label, href, icon]) => <Link key={href} href={href} onClick={() => setOpen(false)} className="flex min-h-11 items-center gap-2 rounded-[6px] px-2 text-sm hover:bg-[var(--hover)]"><AppIcon icon={icon} />{label}</Link>)}
-      </nav>
-    </aside>
-    <main className="workspace-main">{children}</main>
-  </div>;
+  return (
+    <div className="workspace-grid">
+      <header className="mobile-bar">
+        <button
+          className="icon-button"
+          aria-label="打开侧栏"
+          title="打开侧栏"
+          onClick={() => setOpen(true)}
+        >
+          <AppIcon icon={RiMenuLine} size="action" />
+        </button>
+      </header>
+      <aside className="workspace-sidebar" data-open={open} aria-label="工作区侧栏">
+        <div className="flex items-center gap-1">
+          <div className="min-w-0 flex-1">
+            <WorkspaceSwitcher currentId={context.workspaceId} workspaces={workspaces} />
+          </div>
+          <button
+            className="icon-button md:hidden"
+            aria-label="关闭侧栏"
+            title="关闭侧栏"
+            onClick={() => setOpen(false)}
+          >
+            <AppIcon icon={RiCloseLine} />
+          </button>
+        </div>
+        <nav aria-label="主导航" className="mt-3 space-y-0.5">
+          {links.map(([label, href, icon]) => (
+            <Link
+              key={href}
+              href={href}
+              onClick={() => setOpen(false)}
+              className="flex min-h-11 items-center gap-2 rounded-[6px] px-2 text-sm hover:bg-[var(--hover)]"
+            >
+              <AppIcon icon={icon} />
+              {label}
+            </Link>
+          ))}
+        </nav>
+      </aside>
+      <main className="workspace-main">{children}</main>
+    </div>
+  );
 }
 ```
 
@@ -1922,55 +2217,129 @@ export function AppShell({ context, workspaces, children }: AppShellProps) {
 
 ```tsx
 // apps/web/src/app/(workspace)/w/[workspaceId]/layout.tsx
-import { notFound } from "next/navigation";
-import { AppShell } from "@/components/shell/app-shell";
-import { listAccessibleWorkspaces } from "@/features/workspaces/queries";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { requireWorkspaceCapability } from "@/lib/workspaces/access";
+import { notFound } from 'next/navigation';
+import { AppShell } from '@/components/shell/app-shell';
+import { listAccessibleWorkspaces } from '@/features/workspaces/queries';
+import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { requireWorkspaceCapability } from '@/lib/workspaces/access';
 
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
-export default async function WorkspaceLayout({ children, params }: { children: React.ReactNode; params: Promise<{ workspaceId: string }> }) {
+export default async function WorkspaceLayout({
+  children,
+  params,
+}: {
+  children: React.ReactNode;
+  params: Promise<{ workspaceId: string }>;
+}) {
   const { workspaceId } = await params;
   const client = await createServerSupabaseClient();
-  const context = await requireWorkspaceCapability(client, workspaceId, "documents.read").catch(() => null);
+  const context = await requireWorkspaceCapability(client, workspaceId, 'documents.read').catch(
+    () => null
+  );
   if (!context) notFound();
   const workspaces = await listAccessibleWorkspaces(client);
-  return <AppShell context={context} workspaces={workspaces}>{children}</AppShell>;
+  return (
+    <AppShell context={context} workspaces={workspaces}>
+      {children}
+    </AppShell>
+  );
 }
 ```
 
 ```tsx
 // apps/web/src/app/(workspace)/w/[workspaceId]/library/page.tsx
-import { RiUploadCloud2Line } from "@remixicon/react";
-import { AppIcon } from "@/components/ui/app-icon";
-import { EmptyState } from "@/components/ui/empty-state";
+import { RiUploadCloud2Line } from '@remixicon/react';
+import { AppIcon } from '@/components/ui/app-icon';
+import { EmptyState } from '@/components/ui/empty-state';
 
 export default function LibraryPage() {
-  return <div className="page-content"><EmptyState imageSrc="/illustrations/first-upload.png" imageAlt="人物把第一份资料放入档案盒" title="放入第一份资料" description="支持图片、PDF、DOCX、Markdown 和 TXT。原件保存后，你可以离开页面，处理会继续进行。" action={<button data-open-upload className="inline-flex min-h-11 items-center gap-2 rounded-[6px] bg-[var(--accent)] px-4 text-white"><AppIcon icon={RiUploadCloud2Line} size="action" />上传资料</button>} /></div>;
+  return (
+    <div className="page-content">
+      <EmptyState
+        imageSrc="/illustrations/first-upload.png"
+        imageAlt="人物把第一份资料放入档案盒"
+        title="放入第一份资料"
+        description="支持图片、PDF、DOCX、Markdown 和 TXT。原件保存后，你可以离开页面，处理会继续进行。"
+        action={
+          <button
+            data-open-upload
+            className="inline-flex min-h-11 items-center gap-2 rounded-[6px] bg-[var(--accent)] px-4 text-white"
+          >
+            <AppIcon icon={RiUploadCloud2Line} size="action" />
+            上传资料
+          </button>
+        }
+      />
+    </div>
+  );
 }
 ```
 
 ```tsx
 // apps/web/src/app/(workspace)/w/[workspaceId]/graph/page.tsx
-import { EmptyState } from "@/components/ui/empty-state";
+import { EmptyState } from '@/components/ui/empty-state';
 export default function GraphPage() {
-  return <div className="page-content"><EmptyState imageSrc="/illustrations/knowledge-graph.png" imageAlt="成员协作连接资料节点" title="连接会从资料中出现" description="完成处理后，有原文证据的资料、主题、人物和概念会在这里形成连接。" action={<a href="../library" className="inline-flex min-h-11 items-center rounded-[6px] border border-[var(--line)] px-4">返回资料库</a>} /></div>;
+  return (
+    <div className="page-content">
+      <EmptyState
+        imageSrc="/illustrations/knowledge-graph.png"
+        imageAlt="成员协作连接资料节点"
+        title="连接会从资料中出现"
+        description="完成处理后，有原文证据的资料、主题、人物和概念会在这里形成连接。"
+        action={
+          <a
+            href="../library"
+            className="inline-flex min-h-11 items-center rounded-[6px] border border-[var(--line)] px-4"
+          >
+            返回资料库
+          </a>
+        }
+      />
+    </div>
+  );
 }
 ```
 
 ```tsx
 // apps/web/src/app/(workspace)/w/[workspaceId]/chat/page.tsx
-import { EmptyState } from "@/components/ui/empty-state";
+import { EmptyState } from '@/components/ui/empty-state';
 export default function ChatPage() {
-  return <div className="page-content"><EmptyState imageSrc="/illustrations/grounded-chat.png" imageAlt="人物基于多份来源资料提问" title="从你的资料开始提问" description="对话默认私密；即使使用团队资料，团队管理员也不能读取你的会话。" action={<button disabled className="min-h-11 rounded-[6px] border border-[var(--line)] px-4 text-[var(--muted)]">资料处理完成后可提问</button>} /></div>;
+  return (
+    <div className="page-content">
+      <EmptyState
+        imageSrc="/illustrations/grounded-chat.png"
+        imageAlt="人物基于多份来源资料提问"
+        title="从你的资料开始提问"
+        description="对话默认私密；即使使用团队资料，团队管理员也不能读取你的会话。"
+        action={
+          <button
+            disabled
+            className="min-h-11 rounded-[6px] border border-[var(--line)] px-4 text-[var(--muted)]"
+          >
+            资料处理完成后可提问
+          </button>
+        }
+      />
+    </div>
+  );
 }
 ```
 
 ```tsx
 // apps/web/src/app/(workspace)/w/[workspaceId]/qa/page.tsx
 export default function PublishedQaPage() {
-  return <div className="page-content"><h1 className="text-3xl font-semibold tracking-[-0.03em]">团队问答</h1><div className="mt-12 border-y border-[var(--line)] py-10"><h2 className="text-lg font-medium">还没有已发布问答</h2><p className="mt-2 max-w-xl text-sm leading-6 text-[var(--muted)]">只有成员从私密对话中明确整理并发布的答案才会出现在这里；原始私聊不会公开给团队。</p></div></div>;
+  return (
+    <div className="page-content">
+      <h1 className="text-3xl font-semibold tracking-[-0.03em]">团队问答</h1>
+      <div className="mt-12 border-y border-[var(--line)] py-10">
+        <h2 className="text-lg font-medium">还没有已发布问答</h2>
+        <p className="mt-2 max-w-xl text-sm leading-6 text-[var(--muted)]">
+          只有成员从私密对话中明确整理并发布的答案才会出现在这里；原始私聊不会公开给团队。
+        </p>
+      </div>
+    </div>
+  );
 }
 ```
 
@@ -1990,6 +2359,7 @@ git commit -m "feat: add responsive knowledge workspace shell"
 ### Task 6: Add Team Creation, Email Invitations, and Member Administration
 
 **Files:**
+
 - Modify: `apps/web/package.json`
 - Modify: `apps/web/src/components/shell/app-shell.tsx`
 - Modify: `apps/web/src/features/workspaces/actions.ts`
@@ -2005,6 +2375,7 @@ git commit -m "feat: add responsive knowledge workspace shell"
 - Test: `apps/web/src/features/workspaces/invitation-service.test.ts`
 
 **Interfaces:**
+
 - Consumes: `ActionResult<T>`, `WorkspaceRole`, `requireWorkspaceCapability(...)`; all workspace/member/invitation RPCs from Task 3.
 - Produces: `InvitationMailer.send(input: InvitationEmail): Promise<void>`; `inviteMember(client, mailer, input): Promise<ActionResult<{ invitationId: string; expiresAt: string }>>`; `createTeamWorkspaceAction(input): Promise<ActionResult<{ workspaceId: string }>>`; `createInvitationAction(input): Promise<ActionResult<{ invitationId: string; expiresAt: string }>>`; member actions for role change, removal and ownership transfer.
 
@@ -2012,49 +2383,87 @@ git commit -m "feat: add responsive knowledge workspace shell"
 
 ```ts
 // apps/web/src/features/workspaces/invitation-service.test.ts
-import { describe, expect, it, vi } from "vitest";
-import { inviteMember } from "./invitation-service";
+import { describe, expect, it, vi } from 'vitest';
+import { inviteMember } from './invitation-service';
 
-describe("inviteMember", () => {
-  it("sends the one-time token but never returns it to the browser", async () => {
-    const rpc = vi.fn().mockResolvedValue({ data: [{
-      invitation_id: "31000000-0000-4000-8000-000000000001",
-      raw_token: "secret-one-time-token",
-      expires_at: "2026-09-09T09:00:00.000Z",
-    }], error: null });
-    const send = vi.fn().mockResolvedValue(undefined);
-    const result = await inviteMember({ rpc } as never, { send }, {
-      workspaceId: "21000000-0000-4000-8000-000000000001",
-      workspaceName: "Team One",
-      inviterName: "Owner",
-      email: "new@example.test",
-      role: "editor",
-      appUrl: "https://app.example.test",
-      requestId: "32000000-0000-4000-8000-000000000001",
+describe('inviteMember', () => {
+  it('sends the one-time token but never returns it to the browser', async () => {
+    const rpc = vi.fn().mockResolvedValue({
+      data: [
+        {
+          invitation_id: '31000000-0000-4000-8000-000000000001',
+          raw_token: 'secret-one-time-token',
+          expires_at: '2026-09-09T09:00:00.000Z',
+        },
+      ],
+      error: null,
     });
-    expect(result).toEqual({ ok: true, data: {
-      invitationId: "31000000-0000-4000-8000-000000000001",
-      expiresAt: "2026-09-09T09:00:00.000Z",
-    } });
-    expect(send).toHaveBeenCalledWith(expect.objectContaining({
-      to: "new@example.test",
-      acceptUrl: "https://app.example.test/invite/secret-one-time-token",
-    }));
+    const send = vi.fn().mockResolvedValue(undefined);
+    const result = await inviteMember(
+      { rpc } as never,
+      { send },
+      {
+        workspaceId: '21000000-0000-4000-8000-000000000001',
+        workspaceName: 'Team One',
+        inviterName: 'Owner',
+        email: 'new@example.test',
+        role: 'editor',
+        appUrl: 'https://app.example.test',
+        requestId: '32000000-0000-4000-8000-000000000001',
+      }
+    );
+    expect(result).toEqual({
+      ok: true,
+      data: {
+        invitationId: '31000000-0000-4000-8000-000000000001',
+        expiresAt: '2026-09-09T09:00:00.000Z',
+      },
+    });
+    expect(send).toHaveBeenCalledWith(
+      expect.objectContaining({
+        to: 'new@example.test',
+        acceptUrl: 'https://app.example.test/invite/secret-one-time-token',
+      })
+    );
   });
 
-  it("revokes the database invitation when email delivery fails", async () => {
-    const rpc = vi.fn()
-      .mockResolvedValueOnce({ data: [{ invitation_id: "31000000-0000-4000-8000-000000000001", raw_token: "token", expires_at: "2026-09-09T09:00:00.000Z" }], error: null })
+  it('revokes the database invitation when email delivery fails', async () => {
+    const rpc = vi
+      .fn()
+      .mockResolvedValueOnce({
+        data: [
+          {
+            invitation_id: '31000000-0000-4000-8000-000000000001',
+            raw_token: 'token',
+            expires_at: '2026-09-09T09:00:00.000Z',
+          },
+        ],
+        error: null,
+      })
       .mockResolvedValueOnce({ data: null, error: null });
-    const result = await inviteMember({ rpc } as never, { send: vi.fn().mockRejectedValue(new Error("mail down")) }, {
-      workspaceId: "21000000-0000-4000-8000-000000000001", workspaceName: "Team One", inviterName: "Owner",
-      email: "new@example.test", role: "viewer", appUrl: "https://app.example.test",
-      requestId: "32000000-0000-4000-8000-000000000001",
+    const result = await inviteMember(
+      { rpc } as never,
+      { send: vi.fn().mockRejectedValue(new Error('mail down')) },
+      {
+        workspaceId: '21000000-0000-4000-8000-000000000001',
+        workspaceName: 'Team One',
+        inviterName: 'Owner',
+        email: 'new@example.test',
+        role: 'viewer',
+        appUrl: 'https://app.example.test',
+        requestId: '32000000-0000-4000-8000-000000000001',
+      }
+    );
+    expect(result).toEqual({
+      ok: false,
+      error: { code: 'DEPENDENCY_FAILED', message: '邀请邮件发送失败，邀请已撤销' },
     });
-    expect(result).toEqual({ ok: false, error: { code: "DEPENDENCY_FAILED", message: "邀请邮件发送失败，邀请已撤销" } });
-    expect(rpc).toHaveBeenLastCalledWith("revoke_invitation", expect.objectContaining({
-      target_invitation_id: "31000000-0000-4000-8000-000000000001",
-    }));
+    expect(rpc).toHaveBeenLastCalledWith(
+      'revoke_invitation',
+      expect.objectContaining({
+        target_invitation_id: '31000000-0000-4000-8000-000000000001',
+      })
+    );
   });
 });
 ```
@@ -2069,19 +2478,21 @@ Expected: FAIL，报告无法解析 `./invitation-service`。
 
 ```ts
 // apps/web/src/features/workspaces/invitation-mailer.ts
-import "server-only";
-import { Resend } from "resend";
-import type { WorkspaceRole } from "@knowledge/domain";
+import 'server-only';
+import { Resend } from 'resend';
+import type { WorkspaceRole } from '@knowledge/domain';
 
 export type InvitationEmail = {
   to: string;
   inviterName: string;
   workspaceName: string;
-  role: Exclude<WorkspaceRole, "owner">;
+  role: Exclude<WorkspaceRole, 'owner'>;
   acceptUrl: string;
   expiresAt: string;
 };
-export interface InvitationMailer { send(input: InvitationEmail): Promise<void> }
+export interface InvitationMailer {
+  send(input: InvitationEmail): Promise<void>;
+}
 
 export function createInvitationMailer(): InvitationMailer {
   const resend = new Resend(process.env.RESEND_API_KEY);
@@ -2095,7 +2506,7 @@ export function createInvitationMailer(): InvitationMailer {
           `${input.inviterName} 邀请你以 ${input.role} 身份加入 ${input.workspaceName}。`,
           `请在 ${input.expiresAt} 前使用一次性链接接受邀请：`,
           input.acceptUrl,
-        ].join("\n\n"),
+        ].join('\n\n'),
       });
       if (error) throw new Error(error.message);
     },
@@ -2105,29 +2516,35 @@ export function createInvitationMailer(): InvitationMailer {
 
 ```ts
 // apps/web/src/features/workspaces/invitation-service.ts
-import type { SupabaseClient } from "@supabase/supabase-js";
-import type { ActionResult, WorkspaceRole } from "@knowledge/domain";
-import type { Database } from "@knowledge/domain";
-import type { InvitationMailer } from "./invitation-mailer";
+import type { SupabaseClient } from '@supabase/supabase-js';
+import type { ActionResult, WorkspaceRole } from '@knowledge/domain';
+import type { Database } from '@knowledge/domain';
+import type { InvitationMailer } from './invitation-mailer';
 
 type InviteInput = {
-  workspaceId: string; workspaceName: string; inviterName: string; email: string;
-  role: Exclude<WorkspaceRole, "owner">; appUrl: string; requestId: string;
+  workspaceId: string;
+  workspaceName: string;
+  inviterName: string;
+  email: string;
+  role: Exclude<WorkspaceRole, 'owner'>;
+  appUrl: string;
+  requestId: string;
 };
 
 export async function inviteMember(
   client: SupabaseClient<Database>,
   mailer: InvitationMailer,
-  input: InviteInput,
+  input: InviteInput
 ): Promise<ActionResult<{ invitationId: string; expiresAt: string }>> {
-  const { data, error } = await client.rpc("create_invitation", {
+  const { data, error } = await client.rpc('create_invitation', {
     target_workspace_id: input.workspaceId,
     target_email: input.email,
     target_role: input.role,
     correlation_id: input.requestId,
   });
   const invitation = data?.[0];
-  if (error || !invitation) return { ok: false, error: { code: "FORBIDDEN", message: "无法创建此邀请" } };
+  if (error || !invitation)
+    return { ok: false, error: { code: 'FORBIDDEN', message: '无法创建此邀请' } };
   try {
     await mailer.send({
       to: input.email,
@@ -2138,14 +2555,20 @@ export async function inviteMember(
       expiresAt: invitation.expires_at,
     });
   } catch {
-    await client.rpc("revoke_invitation", {
+    await client.rpc('revoke_invitation', {
       target_workspace_id: input.workspaceId,
       target_invitation_id: invitation.invitation_id,
       correlation_id: input.requestId,
     });
-    return { ok: false, error: { code: "DEPENDENCY_FAILED", message: "邀请邮件发送失败，邀请已撤销" } };
+    return {
+      ok: false,
+      error: { code: 'DEPENDENCY_FAILED', message: '邀请邮件发送失败，邀请已撤销' },
+    };
   }
-  return { ok: true, data: { invitationId: invitation.invitation_id, expiresAt: invitation.expires_at } };
+  return {
+    ok: true,
+    data: { invitationId: invitation.invitation_id, expiresAt: invitation.expires_at },
+  };
 }
 ```
 
@@ -2153,76 +2576,122 @@ export async function inviteMember(
 
 ```ts
 // apps/web/src/features/workspaces/schemas.ts
-import { z } from "zod";
+import { z } from 'zod';
 export const CreateTeamSchema = z.object({
   name: z.string().trim().min(1).max(80),
-  slug: z.string().trim().toLowerCase().regex(/^[a-z0-9][a-z0-9-]{2,62}$/),
+  slug: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .regex(/^[a-z0-9][a-z0-9-]{2,62}$/),
 });
 export const InviteMemberSchema = z.object({
   workspaceId: z.string().uuid(),
-  email: z.string().email().transform((value) => value.toLowerCase()), role: z.enum(["admin", "editor", "viewer"]),
+  email: z
+    .string()
+    .email()
+    .transform((value) => value.toLowerCase()),
+  role: z.enum(['admin', 'editor', 'viewer']),
 });
 ```
 
 ```ts
 // append to apps/web/src/features/workspaces/actions.ts
-import { randomUUID } from "node:crypto";
-import type { WorkspaceRole } from "@knowledge/domain";
-import { createInvitationMailer } from "./invitation-mailer";
-import { inviteMember } from "./invitation-service";
-import { CreateTeamSchema, InviteMemberSchema } from "./schemas";
+import { randomUUID } from 'node:crypto';
+import type { WorkspaceRole } from '@knowledge/domain';
+import { createInvitationMailer } from './invitation-mailer';
+import { inviteMember } from './invitation-service';
+import { CreateTeamSchema, InviteMemberSchema } from './schemas';
 
-export async function createTeamWorkspaceAction(input: { name: string; slug: string }): Promise<ActionResult<{ workspaceId: string }>> {
+export async function createTeamWorkspaceAction(input: {
+  name: string;
+  slug: string;
+}): Promise<ActionResult<{ workspaceId: string }>> {
   const parsed = CreateTeamSchema.safeParse(input);
-  if (!parsed.success) return { ok: false, error: { code: "INVALID_INPUT", message: "请检查团队名称和网址标识" } };
+  if (!parsed.success)
+    return { ok: false, error: { code: 'INVALID_INPUT', message: '请检查团队名称和网址标识' } };
   const client = await createServerSupabaseClient();
-  const { data, error } = await client.rpc("create_team_workspace", {
-    workspace_name: parsed.data.name, workspace_slug: parsed.data.slug, correlation_id: randomUUID(),
+  const { data, error } = await client.rpc('create_team_workspace', {
+    workspace_name: parsed.data.name,
+    workspace_slug: parsed.data.slug,
+    correlation_id: randomUUID(),
   });
   return error || !data
-    ? { ok: false, error: { code: "CONFLICT", message: "团队网址标识已被使用" } }
+    ? { ok: false, error: { code: 'CONFLICT', message: '团队网址标识已被使用' } }
     : { ok: true, data: { workspaceId: data } };
 }
 
-export async function createInvitationAction(input: unknown): Promise<ActionResult<{ invitationId: string; expiresAt: string }>> {
+export async function createInvitationAction(
+  input: unknown
+): Promise<ActionResult<{ invitationId: string; expiresAt: string }>> {
   const parsed = InviteMemberSchema.safeParse(input);
-  if (!parsed.success) return { ok: false, error: { code: "INVALID_INPUT", message: "请检查邮箱和角色" } };
+  if (!parsed.success)
+    return { ok: false, error: { code: 'INVALID_INPUT', message: '请检查邮箱和角色' } };
   const client = await createServerSupabaseClient();
-  const { data: { user } } = await client.auth.getUser();
-  if (!user) return { ok: false, error: { code: "AUTH_REQUIRED", message: "请先登录" } };
+  const {
+    data: { user },
+  } = await client.auth.getUser();
+  if (!user) return { ok: false, error: { code: 'AUTH_REQUIRED', message: '请先登录' } };
   const [{ data: workspace }, { data: profile }] = await Promise.all([
-    client.from("workspaces").select("name").eq("id", parsed.data.workspaceId).single(),
-    client.from("profiles").select("display_name").eq("id", user.id).single(),
+    client.from('workspaces').select('name').eq('id', parsed.data.workspaceId).single(),
+    client.from('profiles').select('display_name').eq('id', user.id).single(),
   ]);
-  if (!workspace || !profile) return { ok: false, error: { code: "FORBIDDEN", message: "无法读取邀请上下文" } };
+  if (!workspace || !profile)
+    return { ok: false, error: { code: 'FORBIDDEN', message: '无法读取邀请上下文' } };
   return inviteMember(client, createInvitationMailer(), {
-    ...parsed.data, workspaceName: workspace.name, inviterName: profile.display_name,
-    appUrl: process.env.APP_URL!, requestId: randomUUID(),
+    ...parsed.data,
+    workspaceName: workspace.name,
+    inviterName: profile.display_name,
+    appUrl: process.env.APP_URL!,
+    requestId: randomUUID(),
   });
 }
 
-export async function changeMemberRoleAction(workspaceId: string, userId: string, role: Exclude<WorkspaceRole, "owner">): Promise<ActionResult<undefined>> {
+export async function changeMemberRoleAction(
+  workspaceId: string,
+  userId: string,
+  role: Exclude<WorkspaceRole, 'owner'>
+): Promise<ActionResult<undefined>> {
   const client = await createServerSupabaseClient();
-  const { error } = await client.rpc("change_member_role", {
-    target_workspace_id: workspaceId, target_user_id: userId, new_role: role, correlation_id: randomUUID(),
+  const { error } = await client.rpc('change_member_role', {
+    target_workspace_id: workspaceId,
+    target_user_id: userId,
+    new_role: role,
+    correlation_id: randomUUID(),
   });
-  return error ? { ok: false, error: { code: "FORBIDDEN", message: "你不能修改此成员角色" } } : { ok: true, data: undefined };
+  return error
+    ? { ok: false, error: { code: 'FORBIDDEN', message: '你不能修改此成员角色' } }
+    : { ok: true, data: undefined };
 }
 
-export async function removeMemberAction(workspaceId: string, userId: string): Promise<ActionResult<undefined>> {
+export async function removeMemberAction(
+  workspaceId: string,
+  userId: string
+): Promise<ActionResult<undefined>> {
   const client = await createServerSupabaseClient();
-  const { error } = await client.rpc("remove_member", {
-    target_workspace_id: workspaceId, target_user_id: userId, correlation_id: randomUUID(),
+  const { error } = await client.rpc('remove_member', {
+    target_workspace_id: workspaceId,
+    target_user_id: userId,
+    correlation_id: randomUUID(),
   });
-  return error ? { ok: false, error: { code: "FORBIDDEN", message: "你不能移除此成员" } } : { ok: true, data: undefined };
+  return error
+    ? { ok: false, error: { code: 'FORBIDDEN', message: '你不能移除此成员' } }
+    : { ok: true, data: undefined };
 }
 
-export async function transferOwnershipAction(workspaceId: string, userId: string): Promise<ActionResult<undefined>> {
+export async function transferOwnershipAction(
+  workspaceId: string,
+  userId: string
+): Promise<ActionResult<undefined>> {
   const client = await createServerSupabaseClient();
-  const { error } = await client.rpc("transfer_workspace_ownership", {
-    target_workspace_id: workspaceId, new_owner_user_id: userId, correlation_id: randomUUID(),
+  const { error } = await client.rpc('transfer_workspace_ownership', {
+    target_workspace_id: workspaceId,
+    new_owner_user_id: userId,
+    correlation_id: randomUUID(),
   });
-  return error ? { ok: false, error: { code: "FORBIDDEN", message: "所有权转移失败" } } : { ok: true, data: undefined };
+  return error
+    ? { ok: false, error: { code: 'FORBIDDEN', message: '所有权转移失败' } }
+    : { ok: true, data: undefined };
 }
 ```
 
@@ -2230,120 +2699,323 @@ export async function transferOwnershipAction(workspaceId: string, userId: strin
 
 ```ts
 // apps/web/src/features/workspaces/member-queries.ts
-import type { SupabaseClient } from "@supabase/supabase-js";
-import type { Database } from "@knowledge/domain";
+import type { SupabaseClient } from '@supabase/supabase-js';
+import type { Database } from '@knowledge/domain';
 
 export async function getMemberSettings(client: SupabaseClient<Database>, workspaceId: string) {
-  const [{ data: members, error: memberError }, { data: invitations, error: inviteError }] = await Promise.all([
-    client.from("memberships").select("user_id,role,status,joined_at,profiles!inner(display_name)").eq("workspace_id", workspaceId).eq("status", "active"),
-    client.from("invitations").select("id,email,role,expires_at,accepted_at,revoked_at").eq("workspace_id", workspaceId).order("created_at", { ascending: false }),
-  ]);
-  if (memberError || inviteError) throw new Error("无法读取成员设置");
+  const [{ data: members, error: memberError }, { data: invitations, error: inviteError }] =
+    await Promise.all([
+      client
+        .from('memberships')
+        .select('user_id,role,status,joined_at,profiles!inner(display_name)')
+        .eq('workspace_id', workspaceId)
+        .eq('status', 'active'),
+      client
+        .from('invitations')
+        .select('id,email,role,expires_at,accepted_at,revoked_at')
+        .eq('workspace_id', workspaceId)
+        .order('created_at', { ascending: false }),
+    ]);
+  if (memberError || inviteError) throw new Error('无法读取成员设置');
   return { members: members ?? [], invitations: invitations ?? [] };
 }
 ```
 
 ```tsx
 // apps/web/src/app/invite/[token]/page.tsx
-import { randomUUID } from "node:crypto";
-import { redirect } from "next/navigation";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { randomUUID } from 'node:crypto';
+import { redirect } from 'next/navigation';
+import { createServerSupabaseClient } from '@/lib/supabase/server';
 
-export const metadata = { referrer: "no-referrer" } as const;
-export const dynamic = "force-dynamic";
+export const metadata = { referrer: 'no-referrer' } as const;
+export const dynamic = 'force-dynamic';
 
 export default async function InvitationPage({ params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;
   const client = await createServerSupabaseClient();
-  const { data: { user } } = await client.auth.getUser();
+  const {
+    data: { user },
+  } = await client.auth.getUser();
   if (!user) redirect(`/login?next=${encodeURIComponent(`/invite/${token}`)}`);
   async function accept() {
-    "use server";
+    'use server';
     const serverClient = await createServerSupabaseClient();
-    const { data: workspaceId, error } = await serverClient.rpc("accept_invitation", { raw_token: token, correlation_id: randomUUID() });
+    const { data: workspaceId, error } = await serverClient.rpc('accept_invitation', {
+      raw_token: token,
+      correlation_id: randomUUID(),
+    });
     if (error || !workspaceId) redirect(`/invite/${token}?error=invalid`);
     redirect(`/w/${workspaceId}/library`);
   }
-  return <main className="page-content"><h1 className="text-2xl font-semibold">接受团队邀请</h1><p className="mt-2 text-[var(--muted)]">邀请只可使用一次，并且必须与当前登录邮箱一致。</p><form action={accept} className="mt-5"><button className="min-h-11 rounded-[6px] bg-[var(--accent)] px-4 text-white">接受邀请</button></form></main>;
+  return (
+    <main className="page-content">
+      <h1 className="text-2xl font-semibold">接受团队邀请</h1>
+      <p className="mt-2 text-[var(--muted)]">邀请只可使用一次，并且必须与当前登录邮箱一致。</p>
+      <form action={accept} className="mt-5">
+        <button className="min-h-11 rounded-[6px] bg-[var(--accent)] px-4 text-white">
+          接受邀请
+        </button>
+      </form>
+    </main>
+  );
 }
 ```
 
 ```tsx
 // apps/web/src/features/workspaces/create-team-form.tsx
-"use client";
-import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
-import { createTeamWorkspaceAction } from "./actions";
+'use client';
+import { useRouter } from 'next/navigation';
+import { useState, useTransition } from 'react';
+import { createTeamWorkspaceAction } from './actions';
 
 export function CreateTeamForm() {
-  const router = useRouter(); const [error, setError] = useState(""); const [pending, startTransition] = useTransition();
-  return <form className="mt-6 space-y-4" onSubmit={(event) => {
-    event.preventDefault(); const form = new FormData(event.currentTarget);
-    startTransition(async () => {
-      const result = await createTeamWorkspaceAction({ name: String(form.get("name")), slug: String(form.get("slug")) });
-      if (!result.ok) return setError(result.error.message);
-      router.push(`/w/${result.data.workspaceId}/library`);
-    });
-  }}>
-    <label className="block text-sm font-medium">团队名称<input name="name" required maxLength={80} className="mt-1 min-h-11 w-full rounded-[6px] border border-[var(--line)] px-3" /></label>
-    <label className="block text-sm font-medium">网址标识<input name="slug" required pattern="[a-z0-9][a-z0-9-]{2,62}" className="mt-1 min-h-11 w-full rounded-[6px] border border-[var(--line)] px-3" /></label>
-    <button disabled={pending} className="min-h-11 rounded-[6px] bg-[var(--accent)] px-4 text-white">{pending ? "正在创建" : "创建团队"}</button>
-    <p role="alert" className="text-sm text-red-700">{error}</p>
-  </form>;
+  const router = useRouter();
+  const [error, setError] = useState('');
+  const [pending, startTransition] = useTransition();
+  return (
+    <form
+      className="mt-6 space-y-4"
+      onSubmit={(event) => {
+        event.preventDefault();
+        const form = new FormData(event.currentTarget);
+        startTransition(async () => {
+          const result = await createTeamWorkspaceAction({
+            name: String(form.get('name')),
+            slug: String(form.get('slug')),
+          });
+          if (!result.ok) return setError(result.error.message);
+          router.push(`/w/${result.data.workspaceId}/library`);
+        });
+      }}
+    >
+      <label className="block text-sm font-medium">
+        团队名称
+        <input
+          name="name"
+          required
+          maxLength={80}
+          className="mt-1 min-h-11 w-full rounded-[6px] border border-[var(--line)] px-3"
+        />
+      </label>
+      <label className="block text-sm font-medium">
+        网址标识
+        <input
+          name="slug"
+          required
+          pattern="[a-z0-9][a-z0-9-]{2,62}"
+          className="mt-1 min-h-11 w-full rounded-[6px] border border-[var(--line)] px-3"
+        />
+      </label>
+      <button
+        disabled={pending}
+        className="min-h-11 rounded-[6px] bg-[var(--accent)] px-4 text-white"
+      >
+        {pending ? '正在创建' : '创建团队'}
+      </button>
+      <p role="alert" className="text-sm text-red-700">
+        {error}
+      </p>
+    </form>
+  );
 }
 ```
 
 ```tsx
 // apps/web/src/features/workspaces/member-manager.tsx
-"use client";
-import { useState, useTransition } from "react";
-import type { WorkspaceRole } from "@knowledge/domain";
-import { changeMemberRoleAction, createInvitationAction, removeMemberAction, transferOwnershipAction } from "./actions";
+'use client';
+import { useState, useTransition } from 'react';
+import type { WorkspaceRole } from '@knowledge/domain';
+import {
+  changeMemberRoleAction,
+  createInvitationAction,
+  removeMemberAction,
+  transferOwnershipAction,
+} from './actions';
 
 type Member = { user_id: string; role: WorkspaceRole; profiles: { display_name: string } };
-export function MemberManager(props: { workspaceId: string; currentUserId: string; currentRole: WorkspaceRole; members: Member[] }) {
-  const [message, setMessage] = useState(""); const [pending, startTransition] = useTransition();
-  const roles = props.currentRole === "owner" ? ["admin", "editor", "viewer"] as const : ["editor", "viewer"] as const;
-  return <section className="mt-8">
-    {(props.currentRole === "owner" || props.currentRole === "admin") && <form className="flex flex-wrap gap-2 border-b border-[var(--line)] pb-6" onSubmit={(event) => {
-      event.preventDefault(); const form = new FormData(event.currentTarget);
-      startTransition(async () => {
-        const result = await createInvitationAction({ workspaceId: props.workspaceId, email: form.get("email"), role: form.get("role") });
-        setMessage(result.ok ? "邀请已发送" : result.error.message);
-      });
-    }}><input aria-label="邀请邮箱" name="email" type="email" required className="min-h-11 flex-1 rounded-[6px] border border-[var(--line)] px-3" /><select aria-label="邀请角色" name="role" className="min-h-11 rounded-[6px] border border-[var(--line)] px-2">{roles.map((role) => <option key={role}>{role}</option>)}</select><button disabled={pending} className="min-h-11 rounded-[6px] bg-[var(--accent)] px-4 text-white">发送邀请</button></form>}
-    <ul className="divide-y divide-[var(--line)]">{props.members.map((member) => {
-      const canManage = props.currentRole === "owner" ? member.role !== "owner" : member.role !== "owner" && member.role !== "admin" && member.user_id !== props.currentUserId;
-      return <li key={member.user_id} className="flex min-h-14 items-center gap-3"><span className="min-w-0 flex-1 truncate">{member.profiles.display_name}</span><span className="text-sm text-[var(--muted)]">{member.role}</span>{canManage && <><select aria-label={`修改 ${member.profiles.display_name} 的角色`} defaultValue={member.role} onChange={(event) => startTransition(async () => { const result = await changeMemberRoleAction(props.workspaceId, member.user_id, event.currentTarget.value as Exclude<WorkspaceRole, "owner">); setMessage(result.ok ? "角色已更新" : result.error.message); })}>{roles.map((role) => <option key={role}>{role}</option>)}</select><button className="min-h-11 px-2" onClick={() => startTransition(async () => { const result = await removeMemberAction(props.workspaceId, member.user_id); setMessage(result.ok ? "成员已移除" : result.error.message); })}>移除</button>{props.currentRole === "owner" && <button className="min-h-11 px-2" onClick={() => startTransition(async () => { const result = await transferOwnershipAction(props.workspaceId, member.user_id); setMessage(result.ok ? "所有权已转移" : result.error.message); })}>转移所有权</button>}</>}</li>;
-    })}</ul><p aria-live="polite" className="mt-3 text-sm text-[var(--muted)]">{message}</p>
-  </section>;
+export function MemberManager(props: {
+  workspaceId: string;
+  currentUserId: string;
+  currentRole: WorkspaceRole;
+  members: Member[];
+}) {
+  const [message, setMessage] = useState('');
+  const [pending, startTransition] = useTransition();
+  const roles =
+    props.currentRole === 'owner'
+      ? (['admin', 'editor', 'viewer'] as const)
+      : (['editor', 'viewer'] as const);
+  return (
+    <section className="mt-8">
+      {(props.currentRole === 'owner' || props.currentRole === 'admin') && (
+        <form
+          className="flex flex-wrap gap-2 border-b border-[var(--line)] pb-6"
+          onSubmit={(event) => {
+            event.preventDefault();
+            const form = new FormData(event.currentTarget);
+            startTransition(async () => {
+              const result = await createInvitationAction({
+                workspaceId: props.workspaceId,
+                email: form.get('email'),
+                role: form.get('role'),
+              });
+              setMessage(result.ok ? '邀请已发送' : result.error.message);
+            });
+          }}
+        >
+          <input
+            aria-label="邀请邮箱"
+            name="email"
+            type="email"
+            required
+            className="min-h-11 flex-1 rounded-[6px] border border-[var(--line)] px-3"
+          />
+          <select
+            aria-label="邀请角色"
+            name="role"
+            className="min-h-11 rounded-[6px] border border-[var(--line)] px-2"
+          >
+            {roles.map((role) => (
+              <option key={role}>{role}</option>
+            ))}
+          </select>
+          <button
+            disabled={pending}
+            className="min-h-11 rounded-[6px] bg-[var(--accent)] px-4 text-white"
+          >
+            发送邀请
+          </button>
+        </form>
+      )}
+      <ul className="divide-y divide-[var(--line)]">
+        {props.members.map((member) => {
+          const canManage =
+            props.currentRole === 'owner'
+              ? member.role !== 'owner'
+              : member.role !== 'owner' &&
+                member.role !== 'admin' &&
+                member.user_id !== props.currentUserId;
+          return (
+            <li key={member.user_id} className="flex min-h-14 items-center gap-3">
+              <span className="min-w-0 flex-1 truncate">{member.profiles.display_name}</span>
+              <span className="text-sm text-[var(--muted)]">{member.role}</span>
+              {canManage && (
+                <>
+                  <select
+                    aria-label={`修改 ${member.profiles.display_name} 的角色`}
+                    defaultValue={member.role}
+                    onChange={(event) =>
+                      startTransition(async () => {
+                        const result = await changeMemberRoleAction(
+                          props.workspaceId,
+                          member.user_id,
+                          event.currentTarget.value as Exclude<WorkspaceRole, 'owner'>
+                        );
+                        setMessage(result.ok ? '角色已更新' : result.error.message);
+                      })
+                    }
+                  >
+                    {roles.map((role) => (
+                      <option key={role}>{role}</option>
+                    ))}
+                  </select>
+                  <button
+                    className="min-h-11 px-2"
+                    onClick={() =>
+                      startTransition(async () => {
+                        const result = await removeMemberAction(props.workspaceId, member.user_id);
+                        setMessage(result.ok ? '成员已移除' : result.error.message);
+                      })
+                    }
+                  >
+                    移除
+                  </button>
+                  {props.currentRole === 'owner' && (
+                    <button
+                      className="min-h-11 px-2"
+                      onClick={() =>
+                        startTransition(async () => {
+                          const result = await transferOwnershipAction(
+                            props.workspaceId,
+                            member.user_id
+                          );
+                          setMessage(result.ok ? '所有权已转移' : result.error.message);
+                        })
+                      }
+                    >
+                      转移所有权
+                    </button>
+                  )}
+                </>
+              )}
+            </li>
+          );
+        })}
+      </ul>
+      <p aria-live="polite" className="mt-3 text-sm text-[var(--muted)]">
+        {message}
+      </p>
+    </section>
+  );
 }
 ```
 
 ```tsx
 // apps/web/src/app/(workspace)/workspaces/new/page.tsx
-import { CreateTeamForm } from "@/features/workspaces/create-team-form";
-export default function NewTeamPage() { return <main className="page-content"><h1 className="text-3xl font-semibold">创建团队空间</h1><p className="mt-2 text-sm text-[var(--muted)]">团队资料默认对所有有效成员可见。</p><CreateTeamForm /></main>; }
+import { CreateTeamForm } from '@/features/workspaces/create-team-form';
+export default function NewTeamPage() {
+  return (
+    <main className="page-content">
+      <h1 className="text-3xl font-semibold">创建团队空间</h1>
+      <p className="mt-2 text-sm text-[var(--muted)]">团队资料默认对所有有效成员可见。</p>
+      <CreateTeamForm />
+    </main>
+  );
+}
 ```
 
 ```tsx
 // apps/web/src/app/(workspace)/w/[workspaceId]/settings/members/page.tsx
-import { MemberManager } from "@/features/workspaces/member-manager";
-import { getMemberSettings } from "@/features/workspaces/member-queries";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { requireWorkspaceCapability } from "@/lib/workspaces/access";
+import { MemberManager } from '@/features/workspaces/member-manager';
+import { getMemberSettings } from '@/features/workspaces/member-queries';
+import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { requireWorkspaceCapability } from '@/lib/workspaces/access';
 
-export default async function MembersPage({ params }: { params: Promise<{ workspaceId: string }> }) {
-  const { workspaceId } = await params; const client = await createServerSupabaseClient();
-  const context = await requireWorkspaceCapability(client, workspaceId, "documents.read");
+export default async function MembersPage({
+  params,
+}: {
+  params: Promise<{ workspaceId: string }>;
+}) {
+  const { workspaceId } = await params;
+  const client = await createServerSupabaseClient();
+  const context = await requireWorkspaceCapability(client, workspaceId, 'documents.read');
   const settings = await getMemberSettings(client, workspaceId);
-  return <div className="page-content"><h1 className="text-3xl font-semibold">成员与邀请</h1>{context.kind === "personal" ? <p className="mt-4 text-[var(--muted)]">个人空间只有你本人，不能邀请其他成员。</p> : <MemberManager workspaceId={workspaceId} currentUserId={context.userId} currentRole={context.role} members={settings.members} />}</div>;
+  return (
+    <div className="page-content">
+      <h1 className="text-3xl font-semibold">成员与邀请</h1>
+      {context.kind === 'personal' ? (
+        <p className="mt-4 text-[var(--muted)]">个人空间只有你本人，不能邀请其他成员。</p>
+      ) : (
+        <MemberManager
+          workspaceId={workspaceId}
+          currentUserId={context.userId}
+          currentRole={context.role}
+          members={settings.members}
+        />
+      )}
+    </div>
+  );
 }
 ```
 
 ```tsx
 // add beneath WorkspaceSwitcher in apps/web/src/components/shell/app-shell.tsx
-<Link href="/workspaces/new" className="mt-1 flex min-h-11 items-center rounded-[6px] px-2 text-sm hover:bg-[var(--hover)]">新建团队</Link>
+<Link
+  href="/workspaces/new"
+  className="mt-1 flex min-h-11 items-center rounded-[6px] px-2 text-sm hover:bg-[var(--hover)]"
+>
+  新建团队
+</Link>
 ```
 
 - [ ] **Step 6: 运行邀请单元测试、数据库角色矩阵和生产构建**
@@ -2362,6 +3034,7 @@ git commit -m "feat: add team invitations and member roles"
 ### Task 7: Create Private Storage and Path-Scoped Upload Sessions
 
 **Files:**
+
 - Create: `supabase/migrations/0004_private_upload_sessions.sql`
 - Create: `supabase/tests/0004_private_upload_sessions.test.sql`
 - Regenerate: `packages/domain/src/database.types.ts`
@@ -2372,6 +3045,7 @@ git commit -m "feat: add team invitations and member roles"
 - Test: `apps/web/src/features/uploads/service.test.ts`
 
 **Interfaces:**
+
 - Consumes: `CreateUploadSessionsInput`, `UploadSession`, `parseUploadBatch(...)`, `requireWorkspaceCapability(...)`; tables and access functions from Tasks 2–3.
 - Produces: tables `documents`, `document_revisions`, `upload_sessions`; enum `document_revision_state`; RPCs `create_upload_batch(uuid, jsonb, uuid)`, `complete_upload_session(uuid, uuid)`, `abort_upload_sessions(uuid[], uuid)`; `createUploadSessions(client, signer, input, requestId): Promise<UploadSession[]>`; `completeUploadSession(client, sessionId, requestId): Promise<{ documentId: string; revisionId: string; status: "QUEUED" }>`.
 
@@ -2635,29 +3309,47 @@ grant execute on function public.abort_upload_sessions(uuid[], uuid) to authenti
 
 ```ts
 // apps/web/src/features/uploads/service.test.ts
-import { describe, expect, it, vi } from "vitest";
-import { createUploadSessions } from "./service";
-vi.mock("@/lib/workspaces/access", () => ({ requireWorkspaceCapability: vi.fn().mockResolvedValue({
-  workspaceId: "41000000-0000-4000-8000-000000000001", userId: "40000000-0000-4000-8000-000000000002", role: "editor", kind: "team",
-}) }));
+import { describe, expect, it, vi } from 'vitest';
+import { createUploadSessions } from './service';
+vi.mock('@/lib/workspaces/access', () => ({
+  requireWorkspaceCapability: vi.fn().mockResolvedValue({
+    workspaceId: '41000000-0000-4000-8000-000000000001',
+    userId: '40000000-0000-4000-8000-000000000002',
+    role: 'editor',
+    kind: 'team',
+  }),
+}));
 
-describe("createUploadSessions", () => {
-  it("signs only database-generated paths", async () => {
-    const rpc = vi.fn().mockResolvedValue({ data: [{
-      session_id: "43000000-0000-4000-8000-000000000001",
-      workspace_id: "41000000-0000-4000-8000-000000000001",
-      document_id: "44000000-0000-4000-8000-000000000001",
-      revision_id: "45000000-0000-4000-8000-000000000001",
-      object_path: "quarantine/41000000-0000-4000-8000-000000000001/44000000-0000-4000-8000-000000000001/45000000-0000-4000-8000-000000000001/random.txt",
-      expires_at: "2026-09-02T11:00:00.000Z",
-    }], error: null });
-    const sign = vi.fn().mockResolvedValue({ token: "scoped-token" });
-    const result = await createUploadSessions({ rpc } as never, { sign }, {
-      workspaceId: "41000000-0000-4000-8000-000000000001",
-      files: [{ name: "readme.txt", size: 12, declaredMime: "text/plain" }],
-    }, "42000000-0000-4000-8000-000000000001");
-    expect(sign).toHaveBeenCalledWith(expect.stringContaining("/45000000-0000-4000-8000-000000000001/"));
-    expect(result[0]?.uploadToken).toBe("scoped-token");
+describe('createUploadSessions', () => {
+  it('signs only database-generated paths', async () => {
+    const rpc = vi.fn().mockResolvedValue({
+      data: [
+        {
+          session_id: '43000000-0000-4000-8000-000000000001',
+          workspace_id: '41000000-0000-4000-8000-000000000001',
+          document_id: '44000000-0000-4000-8000-000000000001',
+          revision_id: '45000000-0000-4000-8000-000000000001',
+          object_path:
+            'quarantine/41000000-0000-4000-8000-000000000001/44000000-0000-4000-8000-000000000001/45000000-0000-4000-8000-000000000001/random.txt',
+          expires_at: '2026-09-02T11:00:00.000Z',
+        },
+      ],
+      error: null,
+    });
+    const sign = vi.fn().mockResolvedValue({ token: 'scoped-token' });
+    const result = await createUploadSessions(
+      { rpc } as never,
+      { sign },
+      {
+        workspaceId: '41000000-0000-4000-8000-000000000001',
+        files: [{ name: 'readme.txt', size: 12, declaredMime: 'text/plain' }],
+      },
+      '42000000-0000-4000-8000-000000000001'
+    );
+    expect(sign).toHaveBeenCalledWith(
+      expect.stringContaining('/45000000-0000-4000-8000-000000000001/')
+    );
+    expect(result[0]?.uploadToken).toBe('scoped-token');
   });
 });
 ```
@@ -2668,102 +3360,150 @@ Expected: FAIL，报告无法解析 `./service`。
 
 ```ts
 // apps/web/src/lib/supabase/admin.ts
-import "server-only";
-import { createClient } from "@supabase/supabase-js";
-import type { Database } from "@knowledge/domain";
+import 'server-only';
+import { createClient } from '@supabase/supabase-js';
+import type { Database } from '@knowledge/domain';
 
 export function createAdminSupabaseClient() {
-  return createClient<Database>(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!, {
-    auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
-  });
+  return createClient<Database>(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    {
+      auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
+    }
+  );
 }
 ```
 
 ```ts
 // apps/web/src/features/uploads/service.ts
-import type { SupabaseClient } from "@supabase/supabase-js";
-import { UploadSessionSchema, parseUploadBatch, type CreateUploadSessionsInput, type UploadSession } from "@knowledge/domain";
-import type { Database } from "@knowledge/domain";
-import { requireWorkspaceCapability } from "@/lib/workspaces/access";
+import type { SupabaseClient } from '@supabase/supabase-js';
+import {
+  UploadSessionSchema,
+  parseUploadBatch,
+  type CreateUploadSessionsInput,
+  type UploadSession,
+} from '@knowledge/domain';
+import type { Database } from '@knowledge/domain';
+import { requireWorkspaceCapability } from '@/lib/workspaces/access';
 
 export type UploadSigner = { sign(objectPath: string): Promise<{ token: string }> };
 
 export async function createUploadSessions(
-  client: SupabaseClient<Database>, signer: UploadSigner, rawInput: CreateUploadSessionsInput, requestId: string,
+  client: SupabaseClient<Database>,
+  signer: UploadSigner,
+  rawInput: CreateUploadSessionsInput,
+  requestId: string
 ): Promise<UploadSession[]> {
   const input = parseUploadBatch(rawInput);
-  await requireWorkspaceCapability(client, input.workspaceId, "documents.upload");
-  const { data, error } = await client.rpc("create_upload_batch", {
-    target_workspace_id: input.workspaceId, input_files: input.files, correlation_id: requestId,
+  await requireWorkspaceCapability(client, input.workspaceId, 'documents.upload');
+  const { data, error } = await client.rpc('create_upload_batch', {
+    target_workspace_id: input.workspaceId,
+    input_files: input.files,
+    correlation_id: requestId,
   });
-  if (error || !data) throw new Error("无法创建上传会话");
+  if (error || !data) throw new Error('无法创建上传会话');
   try {
-    return await Promise.all(data.map(async (row) => UploadSessionSchema.parse({
-      id: row.session_id,
-      workspaceId: row.workspace_id,
-      documentId: row.document_id,
-      revisionId: row.revision_id,
-      objectPath: row.object_path,
-      uploadToken: (await signer.sign(row.object_path)).token,
-      expiresAt: row.expires_at,
-    })));
+    return await Promise.all(
+      data.map(async (row) =>
+        UploadSessionSchema.parse({
+          id: row.session_id,
+          workspaceId: row.workspace_id,
+          documentId: row.document_id,
+          revisionId: row.revision_id,
+          objectPath: row.object_path,
+          uploadToken: (await signer.sign(row.object_path)).token,
+          expiresAt: row.expires_at,
+        })
+      )
+    );
   } catch (cause) {
-    await client.rpc("abort_upload_sessions", { target_session_ids: data.map((row) => row.session_id), correlation_id: requestId });
-    throw new Error("无法签发上传授权", { cause });
+    await client.rpc('abort_upload_sessions', {
+      target_session_ids: data.map((row) => row.session_id),
+      correlation_id: requestId,
+    });
+    throw new Error('无法签发上传授权', { cause });
   }
 }
 
-export async function completeUploadSession(client: SupabaseClient<Database>, sessionId: string, requestId: string) {
-  const { data, error } = await client.rpc("complete_upload_session", { target_session_id: sessionId, correlation_id: requestId });
+export async function completeUploadSession(
+  client: SupabaseClient<Database>,
+  sessionId: string,
+  requestId: string
+) {
+  const { data, error } = await client.rpc('complete_upload_session', {
+    target_session_id: sessionId,
+    correlation_id: requestId,
+  });
   const row = data?.[0];
-  if (error || !row) throw new Error("上传对象校验失败");
-  return { documentId: row.document_id, revisionId: row.revision_id, status: "QUEUED" as const };
+  if (error || !row) throw new Error('上传对象校验失败');
+  return { documentId: row.document_id, revisionId: row.revision_id, status: 'QUEUED' as const };
 }
 ```
 
 ```ts
 // apps/web/src/app/api/uploads/sessions/route.ts
-import { randomUUID } from "node:crypto";
-import { NextResponse } from "next/server";
-import { createAdminSupabaseClient } from "@/lib/supabase/admin";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { createUploadSessions } from "@/features/uploads/service";
+import { randomUUID } from 'node:crypto';
+import { NextResponse } from 'next/server';
+import { createAdminSupabaseClient } from '@/lib/supabase/admin';
+import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { createUploadSessions } from '@/features/uploads/service';
 
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 export async function POST(request: Request) {
   try {
     const client = await createServerSupabaseClient();
     const admin = createAdminSupabaseClient();
-    const sessions = await createUploadSessions(client, {
-      async sign(objectPath) {
-        const { data, error } = await admin.storage.from("originals").createSignedUploadUrl(objectPath, { upsert: false });
-        if (error || !data.token) throw new Error("storage signing failed");
-        return { token: data.token };
+    const sessions = await createUploadSessions(
+      client,
+      {
+        async sign(objectPath) {
+          const { data, error } = await admin.storage
+            .from('originals')
+            .createSignedUploadUrl(objectPath, { upsert: false });
+          if (error || !data.token) throw new Error('storage signing failed');
+          return { token: data.token };
+        },
       },
-    }, await request.json(), randomUUID());
-    return NextResponse.json({ sessions }, { headers: { "Cache-Control": "private, no-store" } });
+      await request.json(),
+      randomUUID()
+    );
+    return NextResponse.json({ sessions }, { headers: { 'Cache-Control': 'private, no-store' } });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "上传请求无效";
-    return NextResponse.json({ error: message }, { status: 400, headers: { "Cache-Control": "private, no-store" } });
+    const message = error instanceof Error ? error.message : '上传请求无效';
+    return NextResponse.json(
+      { error: message },
+      { status: 400, headers: { 'Cache-Control': 'private, no-store' } }
+    );
   }
 }
 ```
 
 ```ts
 // apps/web/src/app/api/uploads/sessions/[sessionId]/complete/route.ts
-import { randomUUID } from "node:crypto";
-import { NextResponse } from "next/server";
-import { completeUploadSession } from "@/features/uploads/service";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { randomUUID } from 'node:crypto';
+import { NextResponse } from 'next/server';
+import { completeUploadSession } from '@/features/uploads/service';
+import { createServerSupabaseClient } from '@/lib/supabase/server';
 
-export const dynamic = "force-dynamic";
-export async function POST(_request: Request, { params }: { params: Promise<{ sessionId: string }> }) {
+export const dynamic = 'force-dynamic';
+export async function POST(
+  _request: Request,
+  { params }: { params: Promise<{ sessionId: string }> }
+) {
   try {
     const { sessionId } = await params;
-    const result = await completeUploadSession(await createServerSupabaseClient(), sessionId, randomUUID());
-    return NextResponse.json(result, { headers: { "Cache-Control": "private, no-store" } });
+    const result = await completeUploadSession(
+      await createServerSupabaseClient(),
+      sessionId,
+      randomUUID()
+    );
+    return NextResponse.json(result, { headers: { 'Cache-Control': 'private, no-store' } });
   } catch {
-    return NextResponse.json({ error: "上传对象校验失败" }, { status: 409, headers: { "Cache-Control": "private, no-store" } });
+    return NextResponse.json(
+      { error: '上传对象校验失败' },
+      { status: 409, headers: { 'Cache-Control': 'private, no-store' } }
+    );
   }
 }
 ```
@@ -2784,6 +3524,7 @@ git commit -m "feat: add scoped private upload sessions"
 ### Task 8: Connect the Upload UI and Pass the Foundation Acceptance Gate
 
 **Files:**
+
 - Modify: `apps/web/src/app/(workspace)/w/[workspaceId]/library/page.tsx`
 - Create: `apps/web/src/features/uploads/browser-upload.ts`
 - Create: `apps/web/src/features/uploads/upload-dialog.tsx`
@@ -2797,6 +3538,7 @@ git commit -m "feat: add scoped private upload sessions"
 - Create: `tests/e2e/members-uploads.spec.ts`
 
 **Interfaces:**
+
 - Consumes: `UploadSession`, `WorkspaceContext`, `hasCapability(...)`; `/api/uploads/sessions`; `/api/uploads/sessions/{sessionId}/complete`; browser `uploadToSignedUrl`.
 - Produces: `performUploadBatch(input): Promise<QueuedUpload[]>`; `UploadDialog({ context, onCompleted })`; immediately visible queued document rows; the Foundation fixture used by later slice acceptance suites.
 
@@ -2804,30 +3546,36 @@ git commit -m "feat: add scoped private upload sessions"
 
 ```tsx
 // apps/web/src/features/uploads/upload-dialog.test.tsx
-import { fireEvent, render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
-import { UploadDialog } from "./upload-dialog";
+import { fireEvent, render, screen } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
+import { UploadDialog } from './upload-dialog';
 
 const teamEditor = {
-  workspaceId: "41000000-0000-4000-8000-000000000001",
-  userId: "40000000-0000-4000-8000-000000000002",
-  role: "editor" as const,
-  kind: "team" as const,
+  workspaceId: '41000000-0000-4000-8000-000000000001',
+  userId: '40000000-0000-4000-8000-000000000002',
+  role: 'editor' as const,
+  kind: 'team' as const,
 };
 
-describe("UploadDialog", () => {
-  it("names the target workspace and warns before a team upload", () => {
+describe('UploadDialog', () => {
+  it('names the target workspace and warns before a team upload', () => {
     render(<UploadDialog context={teamEditor} workspaceName="Upload Team" onCompleted={vi.fn()} />);
-    fireEvent.click(screen.getByRole("button", { name: "上传资料" }));
-    expect(screen.getByText("上传到 Upload Team")).toBeVisible();
-    expect(screen.getByText("Upload Team 的所有成员都能看到这些资料。" )).toBeVisible();
-    expect(screen.getByLabelText("选择资料")).toHaveAttribute("multiple");
+    fireEvent.click(screen.getByRole('button', { name: '上传资料' }));
+    expect(screen.getByText('上传到 Upload Team')).toBeVisible();
+    expect(screen.getByText('Upload Team 的所有成员都能看到这些资料。')).toBeVisible();
+    expect(screen.getByLabelText('选择资料')).toHaveAttribute('multiple');
   });
 
-  it("renders no upload control for a viewer", () => {
-    render(<UploadDialog context={{ ...teamEditor, role: "viewer" }} workspaceName="Upload Team" onCompleted={vi.fn()} />);
-    expect(screen.queryByRole("button", { name: "上传资料" })).not.toBeInTheDocument();
-    expect(screen.getByText("你在此工作区拥有只读权限。" )).toBeVisible();
+  it('renders no upload control for a viewer', () => {
+    render(
+      <UploadDialog
+        context={{ ...teamEditor, role: 'viewer' }}
+        workspaceName="Upload Team"
+        onCompleted={vi.fn()}
+      />
+    );
+    expect(screen.queryByRole('button', { name: '上传资料' })).not.toBeInTheDocument();
+    expect(screen.getByText('你在此工作区拥有只读权限。')).toBeVisible();
   });
 });
 ```
@@ -2842,13 +3590,17 @@ Expected: FAIL，报告无法解析 `./upload-dialog`。
 
 ```ts
 // apps/web/src/features/uploads/browser-upload.ts
-import { UploadSessionSchema, parseUploadBatch, type UploadSession } from "@knowledge/domain";
+import { UploadSessionSchema, parseUploadBatch, type UploadSession } from '@knowledge/domain';
 
 export type BrowserUploadGateway = {
   upload(session: UploadSession, file: File): Promise<void>;
 };
-export type UploadProgress = { fileName: string; state: "authorizing" | "uploading" | "verifying" | "queued" | "failed"; message?: string };
-export type QueuedUpload = { documentId: string; revisionId: string; status: "QUEUED" };
+export type UploadProgress = {
+  fileName: string;
+  state: 'authorizing' | 'uploading' | 'verifying' | 'queued' | 'failed';
+  message?: string;
+};
+export type QueuedUpload = { documentId: string; revisionId: string; status: 'QUEUED' };
 
 export async function performUploadBatch(input: {
   workspaceId: string;
@@ -2860,33 +3612,49 @@ export async function performUploadBatch(input: {
   const fetcher = input.fetcher ?? fetch;
   const parsed = parseUploadBatch({
     workspaceId: input.workspaceId,
-    files: input.files.map((file) => ({ name: file.name, size: file.size, declaredMime: file.type || "text/plain" })),
+    files: input.files.map((file) => ({
+      name: file.name,
+      size: file.size,
+      declaredMime: file.type || 'text/plain',
+    })),
   });
-  parsed.files.forEach((file) => input.onProgress({ fileName: file.name, state: "authorizing" }));
-  const response = await fetcher("/api/uploads/sessions", {
-    method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(parsed), cache: "no-store",
+  parsed.files.forEach((file) => input.onProgress({ fileName: file.name, state: 'authorizing' }));
+  const response = await fetcher('/api/uploads/sessions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(parsed),
+    cache: 'no-store',
   });
-  if (!response.ok) throw new Error((await response.json()).error ?? "无法创建上传会话");
-  const payload = await response.json() as { sessions: unknown[] };
+  if (!response.ok) throw new Error((await response.json()).error ?? '无法创建上传会话');
+  const payload = (await response.json()) as { sessions: unknown[] };
   const sessions = payload.sessions.map((session) => UploadSessionSchema.parse(session));
-  if (sessions.length !== input.files.length) throw new Error("上传会话数量不匹配");
+  if (sessions.length !== input.files.length) throw new Error('上传会话数量不匹配');
 
-  return Promise.all(sessions.map(async (session, index) => {
-    const file = input.files[index]!;
-    try {
-      input.onProgress({ fileName: file.name, state: "uploading" });
-      await input.gateway.upload(session, file);
-      input.onProgress({ fileName: file.name, state: "verifying" });
-      const completed = await fetcher(`/api/uploads/sessions/${session.id}/complete`, { method: "POST", cache: "no-store" });
-      if (!completed.ok) throw new Error("上传对象校验失败");
-      const queued = await completed.json() as QueuedUpload;
-      input.onProgress({ fileName: file.name, state: "queued" });
-      return queued;
-    } catch (error) {
-      input.onProgress({ fileName: file.name, state: "failed", message: error instanceof Error ? error.message : "上传失败" });
-      throw error;
-    }
-  }));
+  return Promise.all(
+    sessions.map(async (session, index) => {
+      const file = input.files[index]!;
+      try {
+        input.onProgress({ fileName: file.name, state: 'uploading' });
+        await input.gateway.upload(session, file);
+        input.onProgress({ fileName: file.name, state: 'verifying' });
+        const completed = await fetcher(`/api/uploads/sessions/${session.id}/complete`, {
+          method: 'POST',
+          cache: 'no-store',
+        });
+        if (!completed.ok) throw new Error('上传对象校验失败');
+        const queued = (await completed.json()) as QueuedUpload;
+        input.onProgress({ fileName: file.name, state: 'queued' });
+        return queued;
+      } catch (error) {
+        input.onProgress({
+          fileName: file.name,
+          state: 'failed',
+          message: error instanceof Error ? error.message : '上传失败',
+        });
+        throw error;
+      }
+    })
+  );
 }
 ```
 
@@ -2894,94 +3662,242 @@ export async function performUploadBatch(input: {
 
 ```ts
 // apps/web/src/features/uploads/queries.ts
-import type { SupabaseClient } from "@supabase/supabase-js";
-import type { Database } from "@knowledge/domain";
+import type { SupabaseClient } from '@supabase/supabase-js';
+import type { Database } from '@knowledge/domain';
 
-export async function listWorkspaceDocuments(client: SupabaseClient<Database>, workspaceId: string) {
-  const { data, error } = await client.from("documents").select("id,title,status,updated_at,uploaded_by").eq("workspace_id", workspaceId).order("updated_at", { ascending: false });
-  if (error) throw new Error("无法读取资料库");
+export async function listWorkspaceDocuments(
+  client: SupabaseClient<Database>,
+  workspaceId: string
+) {
+  const { data, error } = await client
+    .from('documents')
+    .select('id,title,status,updated_at,uploaded_by')
+    .eq('workspace_id', workspaceId)
+    .order('updated_at', { ascending: false });
+  if (error) throw new Error('无法读取资料库');
   return data;
 }
 ```
 
 ```tsx
 // apps/web/src/features/uploads/upload-dialog.tsx
-"use client";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { RiCloseLine, RiUploadCloud2Line } from "@remixicon/react";
-import { hasCapability, type WorkspaceContext } from "@knowledge/domain";
-import { createBrowserSupabaseClient } from "@/lib/supabase/client";
-import { AppIcon } from "@/components/ui/app-icon";
-import { performUploadBatch, type UploadProgress } from "./browser-upload";
+'use client';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { RiCloseLine, RiUploadCloud2Line } from '@remixicon/react';
+import { hasCapability, type WorkspaceContext } from '@knowledge/domain';
+import { createBrowserSupabaseClient } from '@/lib/supabase/client';
+import { AppIcon } from '@/components/ui/app-icon';
+import { performUploadBatch, type UploadProgress } from './browser-upload';
 
-export function UploadDialog({ context, workspaceName, onCompleted }: { context: WorkspaceContext; workspaceName: string; onCompleted(): void }) {
+export function UploadDialog({
+  context,
+  workspaceName,
+  onCompleted,
+}: {
+  context: WorkspaceContext;
+  workspaceName: string;
+  onCompleted(): void;
+}) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [progress, setProgress] = useState<UploadProgress[]>([]);
-  const [error, setError] = useState("");
-  if (!hasCapability(context.role, "documents.upload")) return <p className="text-sm text-[var(--muted)]">你在此工作区拥有只读权限。</p>;
-  return <>
-    <button className="inline-flex min-h-11 items-center gap-2 rounded-[6px] bg-[var(--accent)] px-4 text-white" onClick={() => setOpen(true)}><AppIcon icon={RiUploadCloud2Line} size="action" />上传资料</button>
-    {open && <div role="dialog" aria-modal="true" aria-labelledby="upload-title" className="fixed inset-0 z-50 grid place-items-center bg-black/20 p-4">
-      <section className="w-full max-w-lg rounded-[7px] bg-[var(--canvas)] p-5 shadow-xl">
-        <div className="flex items-center justify-between"><h2 id="upload-title" className="text-lg font-semibold">上传到 {workspaceName}</h2><button className="icon-button" aria-label="关闭上传窗口" title="关闭上传窗口" onClick={() => setOpen(false)}><AppIcon icon={RiCloseLine} /></button></div>
-        {context.kind === "team" && <p className="mt-3 border-l-2 border-[var(--accent)] pl-3 text-sm">{workspaceName} 的所有成员都能看到这些资料。</p>}
-        <label className="mt-5 block text-sm font-medium" htmlFor="upload-files">选择资料</label>
-        <input id="upload-files" aria-label="选择资料" className="mt-2 min-h-11 w-full" type="file" multiple accept=".jpg,.jpeg,.png,.webp,.pdf,.docx,.md,.txt" onChange={async (event) => {
-          const files = Array.from(event.currentTarget.files ?? []);
-          if (!files.length) return;
-          setError("");
-          try {
-            const supabase = createBrowserSupabaseClient();
-            await performUploadBatch({
-              workspaceId: context.workspaceId,
-              files,
-              gateway: { async upload(session, file) {
-                const { error: uploadError } = await supabase.storage.from("originals").uploadToSignedUrl(session.objectPath, session.uploadToken, file, { contentType: file.type, upsert: false });
-                if (uploadError) throw uploadError;
-              } },
-              onProgress(next) { setProgress((current) => [...current.filter((item) => item.fileName !== next.fileName), next]); },
-            });
-            onCompleted(); router.refresh();
-          } catch (cause) {
-            setError(cause instanceof Error ? cause.message : "上传失败，请更换文件后重试");
-          }
-        }} />
-        <ul aria-live="polite" className="mt-4 space-y-1 text-sm">{progress.map((item) => <li key={item.fileName}>{item.fileName}：{{ authorizing: "准备中", uploading: "上传中", verifying: "校验中", queued: "排队中", failed: item.message ?? "失败" }[item.state]}</li>)}</ul>
-        {error && <p role="alert" className="mt-3 text-sm text-red-700">{error}</p>}
-      </section>
-    </div>}
-  </>;
+  const [error, setError] = useState('');
+  if (!hasCapability(context.role, 'documents.upload'))
+    return <p className="text-sm text-[var(--muted)]">你在此工作区拥有只读权限。</p>;
+  return (
+    <>
+      <button
+        className="inline-flex min-h-11 items-center gap-2 rounded-[6px] bg-[var(--accent)] px-4 text-white"
+        onClick={() => setOpen(true)}
+      >
+        <AppIcon icon={RiUploadCloud2Line} size="action" />
+        上传资料
+      </button>
+      {open && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="upload-title"
+          className="fixed inset-0 z-50 grid place-items-center bg-black/20 p-4"
+        >
+          <section className="w-full max-w-lg rounded-[7px] bg-[var(--canvas)] p-5 shadow-xl">
+            <div className="flex items-center justify-between">
+              <h2 id="upload-title" className="text-lg font-semibold">
+                上传到 {workspaceName}
+              </h2>
+              <button
+                className="icon-button"
+                aria-label="关闭上传窗口"
+                title="关闭上传窗口"
+                onClick={() => setOpen(false)}
+              >
+                <AppIcon icon={RiCloseLine} />
+              </button>
+            </div>
+            {context.kind === 'team' && (
+              <p className="mt-3 border-l-2 border-[var(--accent)] pl-3 text-sm">
+                {workspaceName} 的所有成员都能看到这些资料。
+              </p>
+            )}
+            <label className="mt-5 block text-sm font-medium" htmlFor="upload-files">
+              选择资料
+            </label>
+            <input
+              id="upload-files"
+              aria-label="选择资料"
+              className="mt-2 min-h-11 w-full"
+              type="file"
+              multiple
+              accept=".jpg,.jpeg,.png,.webp,.pdf,.docx,.md,.txt"
+              onChange={async (event) => {
+                const files = Array.from(event.currentTarget.files ?? []);
+                if (!files.length) return;
+                setError('');
+                try {
+                  const supabase = createBrowserSupabaseClient();
+                  await performUploadBatch({
+                    workspaceId: context.workspaceId,
+                    files,
+                    gateway: {
+                      async upload(session, file) {
+                        const { error: uploadError } = await supabase.storage
+                          .from('originals')
+                          .uploadToSignedUrl(session.objectPath, session.uploadToken, file, {
+                            contentType: file.type,
+                            upsert: false,
+                          });
+                        if (uploadError) throw uploadError;
+                      },
+                    },
+                    onProgress(next) {
+                      setProgress((current) => [
+                        ...current.filter((item) => item.fileName !== next.fileName),
+                        next,
+                      ]);
+                    },
+                  });
+                  onCompleted();
+                  router.refresh();
+                } catch (cause) {
+                  setError(cause instanceof Error ? cause.message : '上传失败，请更换文件后重试');
+                }
+              }}
+            />
+            <ul aria-live="polite" className="mt-4 space-y-1 text-sm">
+              {progress.map((item) => (
+                <li key={item.fileName}>
+                  {item.fileName}：
+                  {
+                    {
+                      authorizing: '准备中',
+                      uploading: '上传中',
+                      verifying: '校验中',
+                      queued: '排队中',
+                      failed: item.message ?? '失败',
+                    }[item.state]
+                  }
+                </li>
+              ))}
+            </ul>
+            {error && (
+              <p role="alert" className="mt-3 text-sm text-red-700">
+                {error}
+              </p>
+            )}
+          </section>
+        </div>
+      )}
+    </>
+  );
 }
 ```
 
 ```tsx
 // apps/web/src/features/uploads/document-list.tsx
-export function DocumentList({ documents }: { documents: Array<{ id: string; title: string; status: string; updated_at: string }> }) {
-  return <div><h1 className="text-3xl font-semibold tracking-[-0.03em]">资料库</h1><div role="table" aria-label="资料列表" className="mt-8 border-t border-[var(--line)]">{documents.map((document) => <div role="row" key={document.id} className="grid min-h-14 grid-cols-[minmax(0,1fr)_120px] items-center border-b border-[var(--line)]"><span role="cell" className="truncate">{document.title}</span><span role="cell" className="text-sm text-[var(--muted)]">{document.status === "QUEUED" ? "排队中" : document.status}</span></div>)}</div></div>;
+export function DocumentList({
+  documents,
+}: {
+  documents: Array<{ id: string; title: string; status: string; updated_at: string }>;
+}) {
+  return (
+    <div>
+      <h1 className="text-3xl font-semibold tracking-[-0.03em]">资料库</h1>
+      <div role="table" aria-label="资料列表" className="mt-8 border-t border-[var(--line)]">
+        {documents.map((document) => (
+          <div
+            role="row"
+            key={document.id}
+            className="grid min-h-14 grid-cols-[minmax(0,1fr)_120px] items-center border-b border-[var(--line)]"
+          >
+            <span role="cell" className="truncate">
+              {document.title}
+            </span>
+            <span role="cell" className="text-sm text-[var(--muted)]">
+              {document.status === 'QUEUED' ? '排队中' : document.status}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 }
 ```
 
 ```tsx
 // replace apps/web/src/app/(workspace)/w/[workspaceId]/library/page.tsx
-import { EmptyState } from "@/components/ui/empty-state";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { requireWorkspaceCapability } from "@/lib/workspaces/access";
-import { listAccessibleWorkspaces } from "@/features/workspaces/queries";
-import { listWorkspaceDocuments } from "@/features/uploads/queries";
-import { DocumentList } from "@/features/uploads/document-list";
-import { UploadDialog } from "@/features/uploads/upload-dialog";
+import { EmptyState } from '@/components/ui/empty-state';
+import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { requireWorkspaceCapability } from '@/lib/workspaces/access';
+import { listAccessibleWorkspaces } from '@/features/workspaces/queries';
+import { listWorkspaceDocuments } from '@/features/uploads/queries';
+import { DocumentList } from '@/features/uploads/document-list';
+import { UploadDialog } from '@/features/uploads/upload-dialog';
 
-export default async function LibraryPage({ params }: { params: Promise<{ workspaceId: string }> }) {
+export default async function LibraryPage({
+  params,
+}: {
+  params: Promise<{ workspaceId: string }>;
+}) {
   const { workspaceId } = await params;
   const client = await createServerSupabaseClient();
-  const context = await requireWorkspaceCapability(client, workspaceId, "documents.read");
-  const [documents, workspaces] = await Promise.all([listWorkspaceDocuments(client, workspaceId), listAccessibleWorkspaces(client)]);
-  const workspaceName = workspaces.find((workspace) => workspace.id === workspaceId)?.name ?? "当前工作区";
-  return <div className="page-content">
-    {documents.length ? <><div className="mb-5 flex justify-end"><UploadDialog context={context} workspaceName={workspaceName} onCompleted={() => undefined} /></div><DocumentList documents={documents} /></> : <EmptyState imageSrc="/illustrations/first-upload.png" imageAlt="人物把第一份资料放入档案盒" title="放入第一份资料" description="支持图片、PDF、DOCX、Markdown 和 TXT。原件保存后，你可以离开页面，处理会继续进行。" action={<UploadDialog context={context} workspaceName={workspaceName} onCompleted={() => undefined} />} />}
-  </div>;
+  const context = await requireWorkspaceCapability(client, workspaceId, 'documents.read');
+  const [documents, workspaces] = await Promise.all([
+    listWorkspaceDocuments(client, workspaceId),
+    listAccessibleWorkspaces(client),
+  ]);
+  const workspaceName =
+    workspaces.find((workspace) => workspace.id === workspaceId)?.name ?? '当前工作区';
+  return (
+    <div className="page-content">
+      {documents.length ? (
+        <>
+          <div className="mb-5 flex justify-end">
+            <UploadDialog
+              context={context}
+              workspaceName={workspaceName}
+              onCompleted={() => undefined}
+            />
+          </div>
+          <DocumentList documents={documents} />
+        </>
+      ) : (
+        <EmptyState
+          imageSrc="/illustrations/first-upload.png"
+          imageAlt="人物把第一份资料放入档案盒"
+          title="放入第一份资料"
+          description="支持图片、PDF、DOCX、Markdown 和 TXT。原件保存后，你可以离开页面，处理会继续进行。"
+          action={
+            <UploadDialog
+              context={context}
+              workspaceName={workspaceName}
+              onCompleted={() => undefined}
+            />
+          }
+        />
+      )}
+    </div>
+  );
 }
 ```
 
@@ -2989,39 +3905,59 @@ export default async function LibraryPage({ params }: { params: Promise<{ worksp
 
 ```ts
 // playwright.config.ts
-import { defineConfig, devices } from "@playwright/test";
+import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
-  testDir: "./tests/e2e",
+  testDir: './tests/e2e',
   fullyParallel: false,
-  globalSetup: "./tests/e2e/global.setup.ts",
-  use: { baseURL: "http://127.0.0.1:3000", trace: "retain-on-failure" },
-  webServer: { command: "pnpm --filter @knowledge/web dev", url: "http://127.0.0.1:3000", reuseExistingServer: !process.env.CI },
+  globalSetup: './tests/e2e/global.setup.ts',
+  use: { baseURL: 'http://127.0.0.1:3000', trace: 'retain-on-failure' },
+  webServer: {
+    command: 'pnpm --filter @knowledge/web dev',
+    url: 'http://127.0.0.1:3000',
+    reuseExistingServer: !process.env.CI,
+  },
   projects: [
-    { name: "mobile-360", use: { ...devices["Desktop Chrome"], viewport: { width: 360, height: 800 } } },
-    { name: "tablet-768", use: { ...devices["Desktop Chrome"], viewport: { width: 768, height: 1024 } } },
-    { name: "desktop-1024", use: { ...devices["Desktop Chrome"], viewport: { width: 1024, height: 900 } } },
-    { name: "desktop-1440", use: { ...devices["Desktop Chrome"], viewport: { width: 1440, height: 1000 } } },
+    {
+      name: 'mobile-360',
+      use: { ...devices['Desktop Chrome'], viewport: { width: 360, height: 800 } },
+    },
+    {
+      name: 'tablet-768',
+      use: { ...devices['Desktop Chrome'], viewport: { width: 768, height: 1024 } },
+    },
+    {
+      name: 'desktop-1024',
+      use: { ...devices['Desktop Chrome'], viewport: { width: 1024, height: 900 } },
+    },
+    {
+      name: 'desktop-1440',
+      use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 1000 } },
+    },
   ],
 });
 ```
 
 ```ts
 // tests/e2e/global.setup.ts
-import { execFileSync } from "node:child_process";
+import { execFileSync } from 'node:child_process';
 export default function globalSetup() {
-  execFileSync("pnpm", ["db:reset"], { stdio: "inherit" });
+  execFileSync('pnpm', ['db:reset'], { stdio: 'inherit' });
 }
 ```
 
 ```ts
 // tests/e2e/support/identities.ts
-import { createHash, randomUUID } from "node:crypto";
-import { createClient } from "@supabase/supabase-js";
+import { createHash, randomUUID } from 'node:crypto';
+import { createClient } from '@supabase/supabase-js';
 
-const admin = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!, {
-  auth: { persistSession: false, autoRefreshToken: false },
-});
+const admin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!,
+  {
+    auth: { persistSession: false, autoRefreshToken: false },
+  }
+);
 
 export async function createIdentity(email: string) {
   const { data, error } = await admin.auth.admin.createUser({ email, email_confirm: true });
@@ -3030,7 +3966,11 @@ export async function createIdentity(email: string) {
 }
 
 export async function magicLink(email: string) {
-  const { data, error } = await admin.auth.admin.generateLink({ type: "magiclink", email, options: { redirectTo: "http://127.0.0.1:3000/auth/callback" } });
+  const { data, error } = await admin.auth.admin.generateLink({
+    type: 'magiclink',
+    email,
+    options: { redirectTo: 'http://127.0.0.1:3000/auth/callback' },
+  });
   if (error || !data.properties.action_link) throw new Error(`fixture link failed: ${email}`);
   return data.properties.action_link;
 }
@@ -3038,32 +3978,93 @@ export async function magicLink(email: string) {
 export async function seedFoundationFixture() {
   const suffix = randomUUID().slice(0, 8);
   const emails = {
-    owner: `owner-${suffix}@example.test`, admin: `admin-${suffix}@example.test`,
-    editor: `editor-${suffix}@example.test`, viewer: `viewer-${suffix}@example.test`, outsider: `outsider-${suffix}@example.test`,
+    owner: `owner-${suffix}@example.test`,
+    admin: `admin-${suffix}@example.test`,
+    editor: `editor-${suffix}@example.test`,
+    viewer: `viewer-${suffix}@example.test`,
+    outsider: `outsider-${suffix}@example.test`,
   };
-  const users = Object.fromEntries(await Promise.all(Object.entries(emails).map(async ([key, email]) => [key, await createIdentity(email)]))) as Record<keyof typeof emails, string>;
-  const teamOne = randomUUID(); const teamTwo = randomUUID();
-  const { error: workspaceError } = await admin.from("workspaces").insert([
-    { id: teamOne, kind: "team", name: "Team One", slug: `team-one-${suffix}`, owner_user_id: users.owner, created_by: users.owner },
-    { id: teamTwo, kind: "team", name: "Team Two", slug: `team-two-${suffix}`, owner_user_id: users.outsider, created_by: users.outsider },
+  const users = Object.fromEntries(
+    await Promise.all(
+      Object.entries(emails).map(async ([key, email]) => [key, await createIdentity(email)])
+    )
+  ) as Record<keyof typeof emails, string>;
+  const teamOne = randomUUID();
+  const teamTwo = randomUUID();
+  const { error: workspaceError } = await admin.from('workspaces').insert([
+    {
+      id: teamOne,
+      kind: 'team',
+      name: 'Team One',
+      slug: `team-one-${suffix}`,
+      owner_user_id: users.owner,
+      created_by: users.owner,
+    },
+    {
+      id: teamTwo,
+      kind: 'team',
+      name: 'Team Two',
+      slug: `team-two-${suffix}`,
+      owner_user_id: users.outsider,
+      created_by: users.outsider,
+    },
   ]);
   if (workspaceError) throw workspaceError;
-  const { error: membershipError } = await admin.from("memberships").insert([
-    { workspace_id: teamOne, user_id: users.owner, role: "owner", status: "active", joined_at: new Date().toISOString() },
-    { workspace_id: teamOne, user_id: users.admin, role: "admin", status: "active", joined_at: new Date().toISOString() },
-    { workspace_id: teamOne, user_id: users.editor, role: "editor", status: "active", joined_at: new Date().toISOString() },
-    { workspace_id: teamOne, user_id: users.viewer, role: "viewer", status: "active", joined_at: new Date().toISOString() },
-    { workspace_id: teamTwo, user_id: users.outsider, role: "owner", status: "active", joined_at: new Date().toISOString() },
+  const { error: membershipError } = await admin.from('memberships').insert([
+    {
+      workspace_id: teamOne,
+      user_id: users.owner,
+      role: 'owner',
+      status: 'active',
+      joined_at: new Date().toISOString(),
+    },
+    {
+      workspace_id: teamOne,
+      user_id: users.admin,
+      role: 'admin',
+      status: 'active',
+      joined_at: new Date().toISOString(),
+    },
+    {
+      workspace_id: teamOne,
+      user_id: users.editor,
+      role: 'editor',
+      status: 'active',
+      joined_at: new Date().toISOString(),
+    },
+    {
+      workspace_id: teamOne,
+      user_id: users.viewer,
+      role: 'viewer',
+      status: 'active',
+      joined_at: new Date().toISOString(),
+    },
+    {
+      workspace_id: teamTwo,
+      user_id: users.outsider,
+      role: 'owner',
+      status: 'active',
+      joined_at: new Date().toISOString(),
+    },
   ]);
   if (membershipError) throw membershipError;
   return { emails, users, teamOne, teamTwo };
 }
 
-export async function createKnownInvitation(workspaceId: string, invitedBy: string, email: string, role: "admin" | "editor" | "viewer") {
-  const token = randomUUID().replaceAll("-", "") + randomUUID().replaceAll("-", "");
-  const tokenHash = `\\x${createHash("sha256").update(token).digest("hex")}`;
-  const { error } = await admin.from("invitations").insert({
-    workspace_id: workspaceId, email, role, token_hash: tokenHash, invited_by: invitedBy,
+export async function createKnownInvitation(
+  workspaceId: string,
+  invitedBy: string,
+  email: string,
+  role: 'admin' | 'editor' | 'viewer'
+) {
+  const token = randomUUID().replaceAll('-', '') + randomUUID().replaceAll('-', '');
+  const tokenHash = `\\x${createHash('sha256').update(token).digest('hex')}`;
+  const { error } = await admin.from('invitations').insert({
+    workspace_id: workspaceId,
+    email,
+    role,
+    token_hash: tokenHash,
+    invited_by: invitedBy,
     expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
   });
   if (error) throw error;
@@ -3077,51 +4078,74 @@ export { admin };
 
 ```ts
 // tests/e2e/auth-workspaces.spec.ts
-import { expect, test } from "@playwright/test";
-import { createKnownInvitation, magicLink, seedFoundationFixture } from "./support/identities";
+import { expect, test } from '@playwright/test';
+import { createKnownInvitation, magicLink, seedFoundationFixture } from './support/identities';
 
-test("email login lands in the private personal library and an accepted invitation becomes the landing workspace", async ({ page }) => {
+test('email login lands in the private personal library and an accepted invitation becomes the landing workspace', async ({
+  page,
+}) => {
   const fixture = await seedFoundationFixture();
   const inviteeEmail = `invitee-${Date.now()}@example.test`;
-  const { createIdentity } = await import("./support/identities");
+  const { createIdentity } = await import('./support/identities');
   await createIdentity(inviteeEmail);
   await page.goto(await magicLink(inviteeEmail));
-  await expect(page.getByRole("heading", { name: "放入第一份资料" })).toBeVisible();
-  const token = await createKnownInvitation(fixture.teamOne, fixture.users.owner, inviteeEmail, "viewer");
+  await expect(page.getByRole('heading', { name: '放入第一份资料' })).toBeVisible();
+  const token = await createKnownInvitation(
+    fixture.teamOne,
+    fixture.users.owner,
+    inviteeEmail,
+    'viewer'
+  );
   await page.goto(`/invite/${token}`);
-  await page.getByRole("button", { name: "接受邀请" }).click();
+  await page.getByRole('button', { name: '接受邀请' }).click();
   await expect(page).toHaveURL(new RegExp(`/w/${fixture.teamOne}/library`));
-  await page.goto("/");
+  await page.goto('/');
   await expect(page).toHaveURL(new RegExp(`/w/${fixture.teamOne}/library`));
 });
 ```
 
 ```ts
 // tests/e2e/members-uploads.spec.ts
-import { expect, test } from "@playwright/test";
-import { admin, magicLink, seedFoundationFixture } from "./support/identities";
+import { expect, test } from '@playwright/test';
+import { admin, magicLink, seedFoundationFixture } from './support/identities';
 
-test("viewer is read-only, editor sees the team warning and a verified upload appears queued", async ({ browser }) => {
+test('viewer is read-only, editor sees the team warning and a verified upload appears queued', async ({
+  browser,
+}) => {
   const fixture = await seedFoundationFixture();
-  const viewerContext = await browser.newContext(); const viewerPage = await viewerContext.newPage();
+  const viewerContext = await browser.newContext();
+  const viewerPage = await viewerContext.newPage();
   await viewerPage.goto(await magicLink(fixture.emails.viewer));
   await viewerPage.goto(`/w/${fixture.teamOne}/library`);
-  await expect(viewerPage.getByText("你在此工作区拥有只读权限。")).toBeVisible();
-  await expect(viewerPage.getByRole("button", { name: "上传资料" })).toHaveCount(0);
+  await expect(viewerPage.getByText('你在此工作区拥有只读权限。')).toBeVisible();
+  await expect(viewerPage.getByRole('button', { name: '上传资料' })).toHaveCount(0);
 
-  const editorContext = await browser.newContext(); const editorPage = await editorContext.newPage();
+  const editorContext = await browser.newContext();
+  const editorPage = await editorContext.newPage();
   await editorPage.goto(await magicLink(fixture.emails.editor));
   await editorPage.goto(`/w/${fixture.teamOne}/library`);
-  await editorPage.getByRole("button", { name: "上传资料" }).click();
-  await expect(editorPage.getByText("Team One 的所有成员都能看到这些资料。")).toBeVisible();
-  await editorPage.getByLabel("选择资料").setInputFiles({ name: "foundation.txt", mimeType: "text/plain", buffer: Buffer.from("foundation") });
-  await expect(editorPage.getByText("foundation.txt：排队中")).toBeVisible({ timeout: 10_000 });
-  await expect(editorPage.getByRole("cell", { name: "foundation" })).toBeVisible();
+  await editorPage.getByRole('button', { name: '上传资料' }).click();
+  await expect(editorPage.getByText('Team One 的所有成员都能看到这些资料。')).toBeVisible();
+  await editorPage.getByLabel('选择资料').setInputFiles({
+    name: 'foundation.txt',
+    mimeType: 'text/plain',
+    buffer: Buffer.from('foundation'),
+  });
+  await expect(editorPage.getByText('foundation.txt：排队中')).toBeVisible({ timeout: 10_000 });
+  await expect(editorPage.getByRole('cell', { name: 'foundation' })).toBeVisible();
 
-  await admin.from("memberships").update({ status: "removed", removed_at: new Date().toISOString() }).eq("workspace_id", fixture.teamOne).eq("user_id", fixture.users.viewer);
+  await admin
+    .from('memberships')
+    .update({ status: 'removed', removed_at: new Date().toISOString() })
+    .eq('workspace_id', fixture.teamOne)
+    .eq('user_id', fixture.users.viewer);
   await viewerPage.reload();
   await expect(viewerPage.getByText(/无法找到|无权访问/)).toBeVisible();
-  await expect(viewerPage.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).resolves.toBe(true);
+  await expect(
+    viewerPage.evaluate(
+      () => document.documentElement.scrollWidth <= document.documentElement.clientWidth
+    )
+  ).resolves.toBe(true);
 });
 ```
 
@@ -3154,13 +4178,25 @@ git commit -m "feat: complete secure foundation slice"
 - 后续计划直接复用且不得改名：
 
 ```ts
-export type WorkspaceRole = "owner" | "admin" | "editor" | "viewer";
-export type WorkspaceContext = { workspaceId: string; userId: string; role: WorkspaceRole; kind: "personal" | "team" };
+export type WorkspaceRole = 'owner' | 'admin' | 'editor' | 'viewer';
+export type WorkspaceContext = {
+  workspaceId: string;
+  userId: string;
+  role: WorkspaceRole;
+  kind: 'personal' | 'team';
+};
 export async function requireWorkspaceCapability(
-  client: SupabaseClient<Database>, workspaceId: string, capability: Capability,
+  client: SupabaseClient<Database>,
+  workspaceId: string,
+  capability: Capability
 ): Promise<WorkspaceContext>;
 export type UploadSession = {
-  id: string; workspaceId: string; documentId: string; revisionId: string;
-  objectPath: string; uploadToken: string; expiresAt: string;
+  id: string;
+  workspaceId: string;
+  documentId: string;
+  revisionId: string;
+  objectPath: string;
+  uploadToken: string;
+  expiresAt: string;
 };
 ```

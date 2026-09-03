@@ -84,17 +84,17 @@ No child plan may create a second implementation of authentication, authorizatio
 
 ## Migration Ownership
 
-| Migration | Owning plan | Schema responsibility |
-|---|---|---|
-| `0001_extensions.sql` | 01 | Required extensions and fixed helper primitives |
-| `0002_identity_workspaces.sql` | 01 | Profiles, workspaces, memberships, invitations, base audit events, Owner invariant |
-| `0003_workspace_access.sql` | 01 | Capability helpers, table RLS, invitation/member RPCs |
-| `0004_private_upload_sessions.sql` | 01 | Private buckets/policies, documents, revisions, upload sessions |
-| `0005_document_processing.sql` | 02 | Processing state machine, job attempts, restricted worker functions, queues |
-| `0006_chunks_hybrid_search.sql` | 02 | Extracted chunks, locators, full-text/trigram/vector indexes, RRF RPC |
-| `0007_ai_knowledge_graph.sql` | 03 | Analysis runs, artifacts/evidence, summaries/classification/entities/relations |
-| `0008_conversations_collaboration.sql` | 04 | Private chat, citations, Q&A, notes/revisions/comments, collaboration RPCs |
-| `0009_deletion_audit_limits.sql` | 05 | Trash/purge/retention, audit immutability/retention, usage, quotas, maintenance RPCs |
+| Migration                              | Owning plan | Schema responsibility                                                                |
+| -------------------------------------- | ----------- | ------------------------------------------------------------------------------------ |
+| `0001_extensions.sql`                  | 01          | Required extensions and fixed helper primitives                                      |
+| `0002_identity_workspaces.sql`         | 01          | Profiles, workspaces, memberships, invitations, base audit events, Owner invariant   |
+| `0003_workspace_access.sql`            | 01          | Capability helpers, table RLS, invitation/member RPCs                                |
+| `0004_private_upload_sessions.sql`     | 01          | Private buckets/policies, documents, revisions, upload sessions                      |
+| `0005_document_processing.sql`         | 02          | Processing state machine, job attempts, restricted worker functions, queues          |
+| `0006_chunks_hybrid_search.sql`        | 02          | Extracted chunks, locators, full-text/trigram/vector indexes, RRF RPC                |
+| `0007_ai_knowledge_graph.sql`          | 03          | Analysis runs, artifacts/evidence, summaries/classification/entities/relations       |
+| `0008_conversations_collaboration.sql` | 04          | Private chat, citations, Q&A, notes/revisions/comments, collaboration RPCs           |
+| `0009_deletion_audit_limits.sql`       | 05          | Trash/purge/retention, audit immutability/retention, usage, quotas, maintenance RPCs |
 
 Every migration is forward-only, reproducible from an empty database, safe under a transaction where Postgres permits it, and paired with pgTAP tests. Any later plan that needs an earlier table uses `ALTER TABLE` only in its assigned migration and documents the compatibility reason.
 
@@ -104,55 +104,87 @@ These names are the integration boundary. During child-plan review, reconcile an
 
 ```ts
 // packages/domain/src/workspaces.ts — Plan 01
-import type { SupabaseClient } from "@supabase/supabase-js";
-import type { Database } from "@knowledge/domain";
+import type { SupabaseClient } from '@supabase/supabase-js';
+import type { Database } from '@knowledge/domain';
 
-export type WorkspaceRole = "owner" | "admin" | "editor" | "viewer";
-export type WorkspaceKind = "personal" | "team";
+export type WorkspaceRole = 'owner' | 'admin' | 'editor' | 'viewer';
+export type WorkspaceKind = 'personal' | 'team';
 export type Capability =
-  | "documents.read" | "documents.upload" | "documents.trash" | "documents.delete"
-  | "jobs.reprocess" | "knowledge.write" | "comments.write" | "qa.publish"
-  | "members.manage_basic" | "members.manage_admin" | "workspace.delete";
+  | 'documents.read'
+  | 'documents.upload'
+  | 'documents.trash'
+  | 'documents.delete'
+  | 'jobs.reprocess'
+  | 'knowledge.write'
+  | 'comments.write'
+  | 'qa.publish'
+  | 'members.manage_basic'
+  | 'members.manage_admin'
+  | 'workspace.delete';
 export type WorkspaceContext = {
-  workspaceId: string; userId: string; role: WorkspaceRole; kind: WorkspaceKind;
+  workspaceId: string;
+  userId: string;
+  role: WorkspaceRole;
+  kind: WorkspaceKind;
 };
 export function requireWorkspaceCapability(
   client: SupabaseClient<Database>,
   workspaceId: string,
-  capability: Capability,
+  capability: Capability
 ): Promise<WorkspaceContext>;
 ```
 
 ```ts
 // packages/domain/src/uploads.ts — Plan 01
 export type UploadSession = {
-  id: string; workspaceId: string; documentId: string; revisionId: string;
-  objectPath: string; uploadToken: string; expiresAt: string;
+  id: string;
+  workspaceId: string;
+  documentId: string;
+  revisionId: string;
+  objectPath: string;
+  uploadToken: string;
+  expiresAt: string;
 };
 // packages/domain/src/documents.ts — Plan 02
 export type SourceLocator = {
-  page?: number; paragraph?: number; charStart?: number; charEnd?: number;
+  page?: number;
+  paragraph?: number;
+  charStart?: number;
+  charEnd?: number;
   imageRegion?: { x: number; y: number; width: number; height: number };
 };
-export type ProcessingStage =
-  | "VALIDATING" | "EXTRACTING" | "CHUNKING" | "ANALYZING" | "INDEXING";
+export type ProcessingStage = 'VALIDATING' | 'EXTRACTING' | 'CHUNKING' | 'ANALYZING' | 'INDEXING';
 ```
 
 ```ts
 // packages/domain/src/search.ts and apps/web/src/features/search/search-workspace.ts — Plan 02
 export type WorkspaceSearchRequest = {
-  workspaceId: string; query: string; limit: number;
-  filters: { documentIds?: string[]; mimeTypes?: string[]; uploadedBy?: string[]; updatedAfter?: string };
+  workspaceId: string;
+  query: string;
+  limit: number;
+  filters: {
+    documentIds?: string[];
+    mimeTypes?: string[];
+    uploadedBy?: string[];
+    updatedAfter?: string;
+  };
 };
 export type WorkspaceSearchResult = {
-  chunkId: string; documentId: string; revisionId: string; title: string;
-  snippet: string; locator: SourceLocator; score: number;
-  matchedBy: Array<"lexical" | "trigram" | "semantic">;
+  chunkId: string;
+  documentId: string;
+  revisionId: string;
+  title: string;
+  snippet: string;
+  locator: SourceLocator;
+  score: number;
+  matchedBy: Array<'lexical' | 'trigram' | 'semantic'>;
 };
 export function searchWorkspace(input: {
-  client: SupabaseClient<Database>; request: WorkspaceSearchRequest;
+  client: SupabaseClient<Database>;
+  request: WorkspaceSearchRequest;
   requireCapability?: typeof requireWorkspaceCapability;
-  embeddingProvider: EmbeddingProvider; requestId: string;
+  embeddingProvider: EmbeddingProvider;
+  requestId: string;
 }): Promise<WorkspaceSearchResult[]>;
 ```
 
@@ -164,13 +196,14 @@ export interface KnowledgeAiProvider {
   analyze(input: AnalyzeKnowledgeInput, signal?: AbortSignal): Promise<KnowledgeAnalysis>;
 }
 export type KnowledgeGraphInput = {
-  workspaceId: string; documentIds?: string[];
-  statuses?: Array<"suggested" | "accepted" | "rejected" | "needs_reconfirmation">;
+  workspaceId: string;
+  documentIds?: string[];
+  statuses?: Array<'suggested' | 'accepted' | 'rejected' | 'needs_reconfirmation'>;
   limit?: number;
 };
 export function getKnowledgeGraph(
   client: SupabaseClient<Database>,
-  input: KnowledgeGraphInput,
+  input: KnowledgeGraphInput
 ): Promise<KnowledgeGraphResult>;
 ```
 
@@ -180,14 +213,15 @@ export interface GroundedChatProvider {
   stream(input: GroundedChatInput, signal: AbortSignal): AsyncIterable<ProviderChatEvent>;
 }
 export function streamGroundedAnswer(input: {
-  request: ChatRequest; signal: AbortSignal;
+  request: ChatRequest;
+  signal: AbortSignal;
 }): AsyncIterable<ChatStreamEvent>;
 ```
 
 ```ts
 // packages/domain/src/lifecycle.ts — Plan 05
-export type DocumentLifecycle = "active" | "trashed" | "deletion_requested" | "purging" | "purged";
-export type WorkspaceLifecycle = "ACTIVE" | "DELETION_SCHEDULED" | "PURGING" | "PURGED";
+export type DocumentLifecycle = 'active' | 'trashed' | 'deletion_requested' | 'purging' | 'purged';
+export type WorkspaceLifecycle = 'ACTIVE' | 'DELETION_SCHEDULED' | 'PURGING' | 'PURGED';
 export class PurgeConsumer {
   runOnce(signal: AbortSignal): Promise<PurgeRunResult>;
 }
@@ -199,19 +233,19 @@ Database functions are the final tenant boundary. TypeScript services never trea
 
 Plan 01 creates these root commands; later plans extend their included work without renaming them:
 
-| Command | Required result |
-|---|---|
-| `pnpm lint` | ESLint and static policy checks pass across all workspaces |
-| `pnpm typecheck` | Every package compiles under strict TypeScript without emit |
-| `pnpm test` | All Vitest unit/component/contract tests pass |
-| `pnpm test:db` | All pgTAP tests pass against the started local Supabase stack |
-| `pnpm build` | Production Web and Worker builds complete with no secret in browser output |
-| `pnpm test:e2e` | All five vertical journeys pass against an isolated local test stack |
-| `pnpm test:security` | Cross-tenant, injection, cache, delete, URL, and secret gates pass |
-| `pnpm test:a11y` | Four-width axe and keyboard gates pass |
-| `pnpm test:ai-evals` | Versioned AI quality corpus meets all four thresholds |
-| `pnpm test:recovery` | Backup manifest and coordinated restore validation pass |
-| `pnpm release:gate -- --revision <full-sha>` | Current evidence is complete and returns `approved` |
+| Command                                      | Required result                                                            |
+| -------------------------------------------- | -------------------------------------------------------------------------- |
+| `pnpm lint`                                  | ESLint and static policy checks pass across all workspaces                 |
+| `pnpm typecheck`                             | Every package compiles under strict TypeScript without emit                |
+| `pnpm test`                                  | All Vitest unit/component/contract tests pass                              |
+| `pnpm test:db`                               | All pgTAP tests pass against the started local Supabase stack              |
+| `pnpm build`                                 | Production Web and Worker builds complete with no secret in browser output |
+| `pnpm test:e2e`                              | All five vertical journeys pass against an isolated local test stack       |
+| `pnpm test:security`                         | Cross-tenant, injection, cache, delete, URL, and secret gates pass         |
+| `pnpm test:a11y`                             | Four-width axe and keyboard gates pass                                     |
+| `pnpm test:ai-evals`                         | Versioned AI quality corpus meets all four thresholds                      |
+| `pnpm test:recovery`                         | Backup manifest and coordinated restore validation pass                    |
+| `pnpm release:gate -- --revision <full-sha>` | Current evidence is complete and returns `approved`                        |
 
 The lockfile is committed. CI uses `pnpm install --frozen-lockfile`, Node 24, an empty disposable Supabase database, synthetic fixtures, and deployment-configured AI model identifiers. `@supabase/ssr` remains behind `apps/web/src/lib/supabase/*` because its public API can change independently of the rest of the application.
 
@@ -265,21 +299,21 @@ Expected: no P0/P1 defect exists, all numeric thresholds pass, active deletion i
 
 ## Specification Coverage Matrix
 
-| Specification area | Primary plan | Required proof |
-|---|---|---|
-| Product scope, default landing, navigation, visual system | 01 | Responsive authenticated workspace E2E and visual/a11y component tests |
-| Auth, personal/team space, invitations, roles, Owner rule | 01 | pgTAP four-role/two-team matrix plus invite E2E |
-| Private Storage, explicit upload target, batch/size/type limits | 01–02 | Storage policy tests plus upload/validation E2E |
-| State machine, retries, restricted worker, atomic current revision | 02 | Worker contract/replay tests and failure-continuity E2E |
-| Format extraction, OCR, source locations, hybrid search | 02 | Seven-format corpus, locator navigation, Latin/CJK/vector/RRF tests |
-| AI artifacts, evidence, human precedence, version remapping | 03 | Schema/RLS/worker tests and fixed AI evaluation corpus |
-| Entity merge, relation review, full/filtered graph, mobile list | 03 | Graph API isolation tests and 300-node responsive E2E |
-| Private grounded chat and citations | 04 | Empty-evidence refusal, citation allow-list, privacy/revocation E2E |
-| Team Q&A publish/edit/withdraw/source invalidation | 04 | Transaction/RLS tests proving no private-message exposure |
-| Shared summaries, notes, comments, conflict, drafts, Realtime | 04 | Concurrency, retention, permission, and unsubscribe tests |
-| Trash, permanent deletion, workspace lifecycle, member retention | 05 | Immediate-cutoff matrix, replayable purge, 30-day lifecycle tests |
-| Audit, downloads/previews, signed URL, logs, quotas, alerts | 05 | Mutation denial, stream-outcome audit, redaction, threshold tests |
-| Security, accessibility, performance, backup/restore, release | 05 | Signed release evidence bound to an immutable full revision |
+| Specification area                                                 | Primary plan | Required proof                                                         |
+| ------------------------------------------------------------------ | ------------ | ---------------------------------------------------------------------- |
+| Product scope, default landing, navigation, visual system          | 01           | Responsive authenticated workspace E2E and visual/a11y component tests |
+| Auth, personal/team space, invitations, roles, Owner rule          | 01           | pgTAP four-role/two-team matrix plus invite E2E                        |
+| Private Storage, explicit upload target, batch/size/type limits    | 01–02        | Storage policy tests plus upload/validation E2E                        |
+| State machine, retries, restricted worker, atomic current revision | 02           | Worker contract/replay tests and failure-continuity E2E                |
+| Format extraction, OCR, source locations, hybrid search            | 02           | Seven-format corpus, locator navigation, Latin/CJK/vector/RRF tests    |
+| AI artifacts, evidence, human precedence, version remapping        | 03           | Schema/RLS/worker tests and fixed AI evaluation corpus                 |
+| Entity merge, relation review, full/filtered graph, mobile list    | 03           | Graph API isolation tests and 300-node responsive E2E                  |
+| Private grounded chat and citations                                | 04           | Empty-evidence refusal, citation allow-list, privacy/revocation E2E    |
+| Team Q&A publish/edit/withdraw/source invalidation                 | 04           | Transaction/RLS tests proving no private-message exposure              |
+| Shared summaries, notes, comments, conflict, drafts, Realtime      | 04           | Concurrency, retention, permission, and unsubscribe tests              |
+| Trash, permanent deletion, workspace lifecycle, member retention   | 05           | Immediate-cutoff matrix, replayable purge, 30-day lifecycle tests      |
+| Audit, downloads/previews, signed URL, logs, quotas, alerts        | 05           | Mutation denial, stream-outcome audit, redaction, threshold tests      |
+| Security, accessibility, performance, backup/restore, release      | 05           | Signed release evidence bound to an immutable full revision            |
 
 ## Change-Control Rules
 

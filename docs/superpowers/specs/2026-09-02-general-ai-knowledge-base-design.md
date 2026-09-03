@@ -76,17 +76,17 @@
 
 ## 5. 角色权限
 
-| 能力 | Owner | Admin | Editor | Viewer |
-|---|---:|---:|---:|---:|
-| 查看资料、搜索、查看图谱 | 是 | 是 | 是 | 是 |
-| 创建和维护本人的私密会话 | 是 | 是 | 是 | 是 |
-| 上传资料、编辑派生知识、评论 | 是 | 是 | 是 | 否 |
-| 发布团队问答 | 是 | 是 | 是 | 否 |
-| 将资料移入回收站及恢复 | 是 | 是 | 是 | 否 |
-| 永久删除资料、手动重跑任务 | 是 | 是 | 否 | 否 |
-| 邀请或移除 Editor / Viewer | 是 | 是 | 否 | 否 |
-| 任命、降级或移除 Admin | 是 | 否 | 否 | 否 |
-| 转移所有权、删除团队空间 | 是 | 否 | 否 | 否 |
+| 能力                         | Owner | Admin | Editor | Viewer |
+| ---------------------------- | ----: | ----: | -----: | -----: |
+| 查看资料、搜索、查看图谱     |    是 |    是 |     是 |     是 |
+| 创建和维护本人的私密会话     |    是 |    是 |     是 |     是 |
+| 上传资料、编辑派生知识、评论 |    是 |    是 |     是 |     否 |
+| 发布团队问答                 |    是 |    是 |     是 |     否 |
+| 将资料移入回收站及恢复       |    是 |    是 |     是 |     否 |
+| 永久删除资料、手动重跑任务   |    是 |    是 |     否 |     否 |
+| 邀请或移除 Editor / Viewer   |    是 |    是 |     否 |     否 |
+| 任命、降级或移除 Admin       |    是 |    否 |     否 |     否 |
+| 转移所有权、删除团队空间     |    是 |    否 |     否 |     否 |
 
 附加约束：
 
@@ -335,20 +335,20 @@ flowchart LR
 
 所有业务记录除 `profiles` 外都直接携带 `workspace_id`，避免只通过多层关联推断租户边界。
 
-| 领域 | 主要表 | 关键约束 |
-|---|---|---|
-| 身份 | `profiles` | 对应 Supabase Auth 用户，只保存产品资料和偏好 |
-| 空间 | `workspaces`, `memberships`, `invitations` | 用户和空间唯一成员关系；团队恰有一个 Owner；邀请令牌只存哈希 |
-| 资料 | `documents`, `document_revisions` | Document 归工作区；Revision 原件不可变；只指向一个当前 READY 版本 |
-| 任务 | `processing_jobs`, `job_attempts` | 任务固定绑定空间、资料和版本；阶段幂等；记录错误与重试 |
-| 检索 | `chunks` | 保存文本、`tsvector`、embedding 和来源定位；仅当前 READY 版本可召回 |
-| 分类 | `topics`, `tags`, `document_topics`, `document_tags` | 名称和关联只在同一工作区内唯一或合并 |
-| 图谱 | `entities`, `entity_aliases`, `relations` | 禁止跨空间边；保存状态和置信度 |
-| AI 证据 | `derived_artifacts`, `derived_evidence` | 摘要、主题、标签、实体和关系共用可追溯产物记录；每个产物关联一个或多个 Revision / Chunk 定位 |
-| 内容 | `summaries`, `notes`, `content_revisions`, `comments` | 与原件版本分离；乐观并发；作者与修改历史 |
-| 对话 | `conversations`, `messages`, `message_citations` | 会话同时校验工作区 Membership 和 `owner_user_id` |
-| 发布 | `published_qas`, `published_qa_citations` | 团队资产；只保留已验证引用；不暴露原私聊 |
-| 审计 | `audit_events`, `usage_events` | 追加写入；不保存原文、密钥或完整模型输入输出 |
+| 领域    | 主要表                                                | 关键约束                                                                                     |
+| ------- | ----------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| 身份    | `profiles`                                            | 对应 Supabase Auth 用户，只保存产品资料和偏好                                                |
+| 空间    | `workspaces`, `memberships`, `invitations`            | 用户和空间唯一成员关系；团队恰有一个 Owner；邀请令牌只存哈希                                 |
+| 资料    | `documents`, `document_revisions`                     | Document 归工作区；Revision 原件不可变；只指向一个当前 READY 版本                            |
+| 任务    | `processing_jobs`, `job_attempts`                     | 任务固定绑定空间、资料和版本；阶段幂等；记录错误与重试                                       |
+| 检索    | `chunks`                                              | 保存文本、`tsvector`、embedding 和来源定位；仅当前 READY 版本可召回                          |
+| 分类    | `topics`, `tags`, `document_topics`, `document_tags`  | 名称和关联只在同一工作区内唯一或合并                                                         |
+| 图谱    | `entities`, `entity_aliases`, `relations`             | 禁止跨空间边；保存状态和置信度                                                               |
+| AI 证据 | `derived_artifacts`, `derived_evidence`               | 摘要、主题、标签、实体和关系共用可追溯产物记录；每个产物关联一个或多个 Revision / Chunk 定位 |
+| 内容    | `summaries`, `notes`, `content_revisions`, `comments` | 与原件版本分离；乐观并发；作者与修改历史                                                     |
+| 对话    | `conversations`, `messages`, `message_citations`      | 会话同时校验工作区 Membership 和 `owner_user_id`                                             |
+| 发布    | `published_qas`, `published_qa_citations`             | 团队资产；只保留已验证引用；不暴露原私聊                                                     |
+| 审计    | `audit_events`, `usage_events`                        | 追加写入；不保存原文、密钥或完整模型输入输出                                                 |
 
 每个 AI 生成的摘要、主题、标签、实体和关系都创建 `derived_artifact`，至少包含：`kind`、`provenance_type`、`status`、`confidence`、`model_provider`、`model_id`、`prompt_version`、`schema_version`、`config_hash` 和 `created_at`。`derived_evidence` 通过复合外键连接产物、原件版本与 Chunk，并保存页码、段落、图片区域或字符范围。人工修改额外记录操作者、前一版本和修改时间。
 
