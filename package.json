@@ -4,6 +4,10 @@
   "private": true,
   "type": "module",
   "description": "AI-powered knowledge base with document processing, hybrid search, and grounded chat",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/guiyang199x/Nodus.git"
+  },
   "scripts": {
     "dev:web": "pnpm --filter @knowledge/web dev",
     "dev:worker": "pnpm --filter @knowledge/worker dev",
