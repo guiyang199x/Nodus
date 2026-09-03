@@ -1,0 +1,300 @@
+# General AI Knowledge Base Master Implementation Plan
+
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+
+**Goal:** Coordinate five independently testable vertical plans into a secure, multi-user, personal-and-team AI knowledge base MVP that is ready for controlled production release.
+
+**Architecture:** A pnpm monorepo contains a Next.js authenticated workspace, an independent long-running document worker, shared domain contracts, and provider-neutral AI adapters. Supabase supplies Auth, Postgres with RLS, Private Storage, Realtime, Queues, and pgvector; every read, derived artifact, graph edge, citation, cache key, and job remains inside one explicit workspace boundary.
+
+**Tech Stack:** Node.js 24 LTS, pnpm workspaces, Next.js 16.2.11 App Router, React 19.2.8, TypeScript strict mode, Tailwind CSS 4, Supabase JS 2.112.4, isolated `@supabase/ssr`, Postgres/RLS/Private Storage/Realtime/Queues/pgvector, OpenAI behind adapters, Zod, Vitest 4.1.11, Testing Library, Playwright, pgTAP, `@remixicon/react` 4.9.0, `@xyflow/react`, OpenTelemetry, Pino, Lighthouse CI, k6, Docker, GitHub Actions.
+
+**Spec:** `docs/superpowers/specs/2026-09-02-general-ai-knowledge-base-design.md`
+
+## Global Constraints
+
+- The product is a cross-industry, multi-user cloud service with one automatic private personal workspace per user and any number of team workspaces.
+- Team roles are Owner, Admin, Editor, and Viewer. The database, Storage, and server enforce permissions; hidden controls are never the authorization boundary.
+- A team always has exactly one Owner. Admin manages Editor/Viewer only; Owner alone manages Admin, transfers ownership, and deletes the team.
+- Personal and team content never cross in search, embeddings, graph relations, AI prompts, caches, jobs, citations, or exports.
+- Uploads accept JPG, PNG, WebP, PDF, DOCX, Markdown, and TXT; a batch has at most 20 files and each file is at most 50 MB.
+- The browser uploads only to the random object path issued by a server-created upload session. Private objects have no permanent public URL.
+- Only the current `READY` document revision participates in new search, graph, or chat. A failed replacement leaves the previous successful revision serving.
+- Every workspace-scoped database relationship uses a composite key containing `workspace_id`; the database rejects cross-workspace and cross-revision references.
+- Worker queue messages contain only `job_id` or `purge_id`. Restricted database functions derive all workspace/document/revision/object targets and reject caller-supplied ownership.
+- AI output is structured, evidence-backed, traceable, editable, and subordinate to human revisions. Provider/model identifiers are runtime configuration, not business-logic constants.
+- Private chat remains private from teammates and administrators. Publishing creates a separate team Q&A asset only after explicit review and citation validation.
+- Original uploaded files are immutable. Shared summaries, notes, tags, relations, and comments are versioned derived knowledge with optimistic concurrency.
+- The visual language is an original Notion-inspired document workspace using warm neutral tokens, approved original hand-drawn line art only in genuine empty states, and official Remix Icon components for all functional icons.
+- Desktop, tablet, and mobile experiences are accepted at widths 360, 768, 1024, and 1440 px. MVP is light-mode only.
+- Document trash and workspace deletion have 30-day restore windows; permanent active-copy purge completes within 24 hours. Vendor and backup retention are disclosed accurately.
+- Logs and audit records never contain file/chunk/chat bodies, complete prompts, complete model output, secrets, cookies, or authorization headers.
+- Each child plan ends in a green vertical-slice gate. Plan 05's signed release decision is the only condition that marks the whole MVP releasable.
+
+---
+
+## Plan Set and Execution Order
+
+1. [Plan 01 — Foundation](2026-09-02-ai-knowledge-base-01-foundation.md)  
+   Repository/tooling, design tokens and workspace shell, authentication, personal/team workspaces, invitation/member lifecycle, RBAC/RLS, private Storage, and fixed-path upload sessions.
+
+2. [Plan 02 — Ingestion and Search](2026-09-02-ai-knowledge-base-02-ingestion-search.md)  
+   Immutable document revisions, durable state machine, restricted worker, format validation/extraction/OCR, chunks and source locators, atomic current revision, hybrid search, retries, duplicate delivery, and orphan cleanup.
+
+3. [Plan 03 — AI Analysis and Knowledge Graph](2026-09-02-ai-knowledge-base-03-ai-graph.md)  
+   Provider-neutral structured analysis, prompt-injection boundary, derived artifacts/evidence, review and human precedence, revision remapping, entity merge, graph API/canvas/mobile list, and AI evaluation set.
+
+4. [Plan 04 — Chat and Collaboration](2026-09-02-ai-knowledge-base-04-chat-collaboration.md)  
+   Private grounded streaming chat, citation authorization, explicit team Q&A publishing, versioned summaries/notes, 24-hour local drafts, conflict resolution, comments, and RLS-protected Realtime.
+
+5. [Plan 05 — Hardening and Release](2026-09-02-ai-knowledge-base-05-hardening-release.md)  
+   Trash/deletion/retention, bounded purge, audit, file delivery, observability, limits, alerts, adversarial security, accessibility, performance, backup/restore, immutable builds, and release gates.
+
+Execution is strictly ordered by plan because every later plan consumes contracts and migrations from earlier plans. Tasks inside a plan may be delegated only when their file lists do not overlap and their listed `Consumes` interfaces already exist on the integration branch.
+
+## Repository Structure and Ownership
+
+```text
+.
+├── apps/
+│   ├── web/                    # Next.js UI, authenticated routes, SSE chat, upload coordination
+│   └── worker/                 # Long-running queue consumer, extract/AI/index/purge stages
+├── packages/
+│   ├── domain/                 # Zod schemas, stable data types, policy/state-machine contracts
+│   ├── ai/                     # Replaceable analysis, embedding, OCR, and grounded-chat adapters
+│   ├── observability/          # Redacted logs, traces, metrics, correlation context
+│   └── test-fixtures/          # Synthetic files/users/teams; no production-derived content
+├── supabase/
+│   ├── migrations/             # Ordered schema, RLS, Storage, queue, and restricted RPC definitions
+│   ├── tests/                  # pgTAP permission and lifecycle matrix
+│   └── seed.sql                # Deterministic local development identities and workspace data
+├── tests/
+│   ├── e2e/                    # Vertical journey gates
+│   ├── ai-evals/               # Versioned annotated quality corpus and scorer
+│   ├── security/               # Cross-tenant, prompt, cache, deletion, and secret tests
+│   ├── accessibility/          # Axe, keyboard, screen-reader checklist, responsive widths
+│   └── performance/            # Browser and service budgets against stated scale
+├── scripts/                    # Backup, restore drill, release evidence, safe maintenance commands
+├── ops/
+│   ├── alerts/                 # Exact deployable alert expressions
+│   └── runbooks/               # Incident, recovery, deletion, key rotation, deploy, rollback
+└── docs/superpowers/           # Approved specification, plans, and approved visual assets
+```
+
+No child plan may create a second implementation of authentication, authorization, source locators, hybrid search, AI provider selection, audit writing, or lifecycle transitions. Stable contracts live in their owning package and are imported by consumers.
+
+## Migration Ownership
+
+| Migration | Owning plan | Schema responsibility |
+|---|---|---|
+| `0001_extensions.sql` | 01 | Required extensions and fixed helper primitives |
+| `0002_identity_workspaces.sql` | 01 | Profiles, workspaces, memberships, invitations, base audit events, Owner invariant |
+| `0003_workspace_access.sql` | 01 | Capability helpers, table RLS, invitation/member RPCs |
+| `0004_private_upload_sessions.sql` | 01 | Private buckets/policies, documents, revisions, upload sessions |
+| `0005_document_processing.sql` | 02 | Processing state machine, job attempts, restricted worker functions, queues |
+| `0006_chunks_hybrid_search.sql` | 02 | Extracted chunks, locators, full-text/trigram/vector indexes, RRF RPC |
+| `0007_ai_knowledge_graph.sql` | 03 | Analysis runs, artifacts/evidence, summaries/classification/entities/relations |
+| `0008_conversations_collaboration.sql` | 04 | Private chat, citations, Q&A, notes/revisions/comments, collaboration RPCs |
+| `0009_deletion_audit_limits.sql` | 05 | Trash/purge/retention, audit immutability/retention, usage, quotas, maintenance RPCs |
+
+Every migration is forward-only, reproducible from an empty database, safe under a transaction where Postgres permits it, and paired with pgTAP tests. Any later plan that needs an earlier table uses `ALTER TABLE` only in its assigned migration and documents the compatibility reason.
+
+## Cross-Plan Contract Ledger
+
+These names are the integration boundary. During child-plan review, reconcile any draft spelling to this ledger before implementation begins.
+
+```ts
+// packages/domain/src/workspaces.ts — Plan 01
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "@knowledge/domain";
+
+export type WorkspaceRole = "owner" | "admin" | "editor" | "viewer";
+export type WorkspaceKind = "personal" | "team";
+export type Capability =
+  | "documents.read" | "documents.upload" | "documents.trash" | "documents.delete"
+  | "jobs.reprocess" | "knowledge.write" | "comments.write" | "qa.publish"
+  | "members.manage_basic" | "members.manage_admin" | "workspace.delete";
+export type WorkspaceContext = {
+  workspaceId: string; userId: string; role: WorkspaceRole; kind: WorkspaceKind;
+};
+export function requireWorkspaceCapability(
+  client: SupabaseClient<Database>,
+  workspaceId: string,
+  capability: Capability,
+): Promise<WorkspaceContext>;
+```
+
+```ts
+// packages/domain/src/uploads.ts — Plan 01
+export type UploadSession = {
+  id: string; workspaceId: string; documentId: string; revisionId: string;
+  objectPath: string; uploadToken: string; expiresAt: string;
+};
+// packages/domain/src/documents.ts — Plan 02
+export type SourceLocator = {
+  page?: number; paragraph?: number; charStart?: number; charEnd?: number;
+  imageRegion?: { x: number; y: number; width: number; height: number };
+};
+export type ProcessingStage =
+  | "VALIDATING" | "EXTRACTING" | "CHUNKING" | "ANALYZING" | "INDEXING";
+```
+
+```ts
+// packages/domain/src/search.ts and apps/web/src/features/search/search-workspace.ts — Plan 02
+export type WorkspaceSearchRequest = {
+  workspaceId: string; query: string; limit: number;
+  filters: { documentIds?: string[]; mimeTypes?: string[]; uploadedBy?: string[]; updatedAfter?: string };
+};
+export type WorkspaceSearchResult = {
+  chunkId: string; documentId: string; revisionId: string; title: string;
+  snippet: string; locator: SourceLocator; score: number;
+  matchedBy: Array<"lexical" | "trigram" | "semantic">;
+};
+export function searchWorkspace(input: {
+  client: SupabaseClient<Database>; request: WorkspaceSearchRequest;
+  requireCapability?: typeof requireWorkspaceCapability;
+  embeddingProvider: EmbeddingProvider; requestId: string;
+}): Promise<WorkspaceSearchResult[]>;
+```
+
+```ts
+// packages/ai/src/contracts.ts — Plan 03
+export interface KnowledgeAiProvider {
+  readonly providerName: string;
+  readonly modelId: string;
+  analyze(input: AnalyzeKnowledgeInput, signal?: AbortSignal): Promise<KnowledgeAnalysis>;
+}
+export type KnowledgeGraphInput = {
+  workspaceId: string; documentIds?: string[];
+  statuses?: Array<"suggested" | "accepted" | "rejected" | "needs_reconfirmation">;
+  limit?: number;
+};
+export function getKnowledgeGraph(
+  client: SupabaseClient<Database>,
+  input: KnowledgeGraphInput,
+): Promise<KnowledgeGraphResult>;
+```
+
+```ts
+// packages/ai/src/chat-provider.ts and packages/domain/src/chat.ts — Plan 04
+export interface GroundedChatProvider {
+  stream(input: GroundedChatInput, signal: AbortSignal): AsyncIterable<ProviderChatEvent>;
+}
+export function streamGroundedAnswer(input: {
+  request: ChatRequest; signal: AbortSignal;
+}): AsyncIterable<ChatStreamEvent>;
+```
+
+```ts
+// packages/domain/src/lifecycle.ts — Plan 05
+export type DocumentLifecycle = "active" | "trashed" | "deletion_requested" | "purging" | "purged";
+export type WorkspaceLifecycle = "ACTIVE" | "DELETION_SCHEDULED" | "PURGING" | "PURGED";
+export class PurgeConsumer {
+  runOnce(signal: AbortSignal): Promise<PurgeRunResult>;
+}
+```
+
+Database functions are the final tenant boundary. TypeScript services never treat a client-supplied `workspaceId`, object path, revision, chunk, citation, job, or purge target as authoritative.
+
+## Root Command Contract
+
+Plan 01 creates these root commands; later plans extend their included work without renaming them:
+
+| Command | Required result |
+|---|---|
+| `pnpm lint` | ESLint and static policy checks pass across all workspaces |
+| `pnpm typecheck` | Every package compiles under strict TypeScript without emit |
+| `pnpm test` | All Vitest unit/component/contract tests pass |
+| `pnpm test:db` | All pgTAP tests pass against the started local Supabase stack |
+| `pnpm build` | Production Web and Worker builds complete with no secret in browser output |
+| `pnpm test:e2e` | All five vertical journeys pass against an isolated local test stack |
+| `pnpm test:security` | Cross-tenant, injection, cache, delete, URL, and secret gates pass |
+| `pnpm test:a11y` | Four-width axe and keyboard gates pass |
+| `pnpm test:ai-evals` | Versioned AI quality corpus meets all four thresholds |
+| `pnpm test:recovery` | Backup manifest and coordinated restore validation pass |
+| `pnpm release:gate -- --revision <full-sha>` | Current evidence is complete and returns `approved` |
+
+The lockfile is committed. CI uses `pnpm install --frozen-lockfile`, Node 24, an empty disposable Supabase database, synthetic fixtures, and deployment-configured AI model identifiers. `@supabase/ssr` remains behind `apps/web/src/lib/supabase/*` because its public API can change independently of the rest of the application.
+
+## Vertical Checkpoints
+
+### Checkpoint 1: Identity and Security Foundation
+
+- [ ] Complete every checkbox in Plan 01 and review each task commit.
+- [ ] Run `pnpm lint && pnpm typecheck && pnpm test && pnpm test:db && pnpm test:e2e:foundation`.
+- [ ] Verify new-user personal workspace, team invite acceptance, four-role denial matrix, Owner invariant, private bucket policies, and fixed-path upload session.
+- [ ] Tag the accepted commit `mvp-slice-01-foundation`.
+
+Expected: all checks pass and an authenticated user can safely reach a personal/team workspace and upload one private object, without processing it.
+
+### Checkpoint 2: Ingestion and Search
+
+- [ ] Complete every checkbox in Plan 02 against the accepted Slice 01 commit.
+- [ ] Run `pnpm lint && pnpm typecheck && pnpm test && pnpm test:db && pnpm test:e2e:ingestion-search`.
+- [ ] Verify all seven formats, magic-byte mismatch, password/encrypted rejection, duplicate delivery, retry exhaustion, stale heartbeat, previous-ready-version continuity, CJK/Latin/vector retrieval, and workspace-first ranking.
+- [ ] Tag the accepted commit `mvp-slice-02-ingestion-search`.
+
+Expected: an authorized upload reaches `READY`, keeps clickable source locators, and appears only in the uploader's current workspace search.
+
+### Checkpoint 3: AI Knowledge and Graph
+
+- [ ] Complete every checkbox in Plan 03 against the accepted Slice 02 commit.
+- [ ] Run `pnpm lint && pnpm typecheck && pnpm test && pnpm test:db && pnpm test:ai-evals && pnpm test:e2e:ai-graph`.
+- [ ] Verify every artifact has evidence, rejected suggestions disappear from defaults, human changes survive reprocessing, unmapped evidence needs reconfirmation, entity merge remains intra-workspace, and mobile graph list is equivalent.
+- [ ] Tag the accepted commit `mvp-slice-03-ai-graph`.
+
+Expected: processed sources become reviewable summaries/classifications/entities/relations and an evidence-navigable graph, with measured quality above the release floors.
+
+### Checkpoint 4: Private Chat and Collaboration
+
+- [ ] Complete every checkbox in Plan 04 against the accepted Slice 03 commit.
+- [ ] Run `pnpm lint && pnpm typecheck && pnpm test && pnpm test:db && pnpm test:e2e:chat-collaboration`.
+- [ ] Verify evidence refusal, citation allow-list, mid-stream revocation, Admin/private-chat denial, explicit Q&A copy, source invalidation, two-second autosave, 24-hour draft retention, optimistic conflict, comments, and Realtime unsubscribe.
+- [ ] Tag the accepted commit `mvp-slice-04-chat-collaboration`.
+
+Expected: every role can privately ask grounded questions, permitted roles can explicitly publish verified team Q&A, and shared derived knowledge collaborates without silent overwrite.
+
+### Checkpoint 5: Release Hardening
+
+- [ ] Complete every checkbox in Plan 05 against the accepted Slice 04 commit.
+- [ ] Run the complete clean-checkout command sequence in Plan 05 Task 8.
+- [ ] Inspect the signed evidence bundle for security, AI quality, accessibility, performance, deletion, observability, backup, and recovery.
+- [ ] Confirm the privacy disclosure names the selected AI/OCR/embedding suppliers, sent data categories, processing region, training use, monitoring retention, deletion control, and backup expiry.
+- [ ] Tag the immutable approved commit `mvp-release-candidate-1` only after `release:gate` returns `approved`.
+
+Expected: no P0/P1 defect exists, all numeric thresholds pass, active deletion is verified, the latest restore drill meets RPO/RTO, and immutable Web/Worker artifacts are ready for controlled production rollout.
+
+## Specification Coverage Matrix
+
+| Specification area | Primary plan | Required proof |
+|---|---|---|
+| Product scope, default landing, navigation, visual system | 01 | Responsive authenticated workspace E2E and visual/a11y component tests |
+| Auth, personal/team space, invitations, roles, Owner rule | 01 | pgTAP four-role/two-team matrix plus invite E2E |
+| Private Storage, explicit upload target, batch/size/type limits | 01–02 | Storage policy tests plus upload/validation E2E |
+| State machine, retries, restricted worker, atomic current revision | 02 | Worker contract/replay tests and failure-continuity E2E |
+| Format extraction, OCR, source locations, hybrid search | 02 | Seven-format corpus, locator navigation, Latin/CJK/vector/RRF tests |
+| AI artifacts, evidence, human precedence, version remapping | 03 | Schema/RLS/worker tests and fixed AI evaluation corpus |
+| Entity merge, relation review, full/filtered graph, mobile list | 03 | Graph API isolation tests and 300-node responsive E2E |
+| Private grounded chat and citations | 04 | Empty-evidence refusal, citation allow-list, privacy/revocation E2E |
+| Team Q&A publish/edit/withdraw/source invalidation | 04 | Transaction/RLS tests proving no private-message exposure |
+| Shared summaries, notes, comments, conflict, drafts, Realtime | 04 | Concurrency, retention, permission, and unsubscribe tests |
+| Trash, permanent deletion, workspace lifecycle, member retention | 05 | Immediate-cutoff matrix, replayable purge, 30-day lifecycle tests |
+| Audit, downloads/previews, signed URL, logs, quotas, alerts | 05 | Mutation denial, stream-outcome audit, redaction, threshold tests |
+| Security, accessibility, performance, backup/restore, release | 05 | Signed release evidence bound to an immutable full revision |
+
+## Change-Control Rules
+
+- A contract change updates this ledger and every consuming plan before its implementation commit is accepted.
+- A schema change belongs to exactly one numbered migration; never edit a migration already applied outside local development. Add the next migration during execution if a reviewed correction is required.
+- A new browser dependency must justify why native Web/React/approved packages cannot meet the requirement, must be pinned in the lockfile, and must pass license and bundle review.
+- A new AI provider or model changes only adapter/configuration and evaluation evidence; it cannot change tenant, evidence, citation, or persistence rules.
+- A scope addition from Section 3.2 or Section 20 of the specification requires a new approved specification and implementation plan, not an opportunistic task in these five plans.
+- Test fixtures are synthetic and must never be copied from user or production content.
+
+## Master Completion Gate
+
+- [ ] All five child plan completion gates are checked against their actual commits.
+- [ ] The migration chain builds an empty environment and upgrades the latest staging snapshot without data loss.
+- [ ] Cross-plan contract names and types match this ledger with no duplicate authorization, locator, search, or lifecycle implementation.
+- [ ] Every row/object/queue operation can be traced to an authenticated user or audited system initiator without logging content.
+- [ ] The release evidence maps every Section 18 requirement to a current automated or named manual result.
+- [ ] A signed `approved` decision references the same full git revision as the Web image, Worker image, database migration set, SBOMs, and deployment manifest.
