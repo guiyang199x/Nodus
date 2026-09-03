@@ -6,7 +6,7 @@
 
 **Architecture:** Destructive operations first make content unreachable synchronously, then enqueue bounded, idempotent purge work that removes active copies within 24 hours while retaining body-free audit metadata. Cross-cutting safeguards live in shared request, logging, metrics, and authorization boundaries; automated release workflows run the same security, accessibility, performance, AI-evaluation, and recovery gates defined by the product specification.
 
-**Tech Stack:** Node.js 24 LTS, pnpm workspaces, Next.js 16.2.11, React 19.2.8, TypeScript strict mode, Supabase/Postgres/RLS/Private Storage/Queues, AWS SDK v3 for an independent versioned backup bucket, OpenTelemetry/OTLP, Pino, Vitest 4.1.11, pgTAP, Playwright, `@axe-core/playwright`, Lighthouse CI, k6, GitHub Actions, Docker.
+**Tech Stack:** Node.js 24 LTS, pnpm workspaces, Next.js 16.3.4, React 19.2.8, TypeScript strict mode, Supabase/Postgres/RLS/Private Storage/Queues, AWS SDK v3 for an independent versioned backup bucket, OpenTelemetry/OTLP, Pino, Vitest 4.1.11, pgTAP, Playwright, `@axe-core/playwright`, Lighthouse CI, k6, GitHub Actions, Docker.
 
 **Spec:** `docs/superpowers/specs/2026-09-02-general-ai-knowledge-base-design.md`
 

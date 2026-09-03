@@ -6,7 +6,7 @@
 
 **Architecture:** `packages/ai` 定义供应商无关的结构化分析契约，OpenAI 仅作为首个适配器且每次调用显式使用 `store: false`；Worker 把数据库 Chunk 映射为一次性本地引用后调用适配器，再通过受限 RPC 原子发布派生产物和证据。Postgres 保存规范化主题、标签、实体、关系及其证据，Web 只通过工作区过滤后的查询服务访问这些投影；人工审核生成优先层，后续重处理不得覆盖它。
 
-**Tech Stack:** Node.js 24 LTS、TypeScript strict、Next.js 16.2.11 / React 19.2.8、Supabase Postgres/RLS、Supabase Queues Worker、OpenAI JS SDK 7.8.0、Zod 4.5.4、`@xyflow/react` 12.11.2、Vitest 4.1.11、Playwright。
+**Tech Stack:** Node.js 24 LTS、TypeScript strict、Next.js 16.3.4 / React 19.2.8、Supabase Postgres/RLS、Supabase Queues Worker、OpenAI JS SDK 7.8.0、Zod 3.25.76、`@xyflow/react` 12.11.2、Vitest 4.1.11、Playwright。
 
 **Spec:** `docs/superpowers/specs/2026-09-02-general-ai-knowledge-base-design.md`
 

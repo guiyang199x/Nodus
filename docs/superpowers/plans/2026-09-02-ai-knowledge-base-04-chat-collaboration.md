@@ -6,7 +6,7 @@
 
 **Architecture:** The web application owns conversation orchestration and streams server-sent events, while retrieval remains a single-workspace database operation and the AI package remains provider-neutral. Private conversations are protected by live workspace membership plus `owner_user_id`; citation rows retain only an authorized locator/display snapshot and become explicitly unavailable when their source is purged. Published Q&A is a separate searchable team asset, and collaborative summary/note saves append one immutable revision per successful compare-and-swap while summary edits reuse Plan 03's manual-provenance and evidence transaction.
 
-**Tech Stack:** Node.js 24 LTS, pnpm workspaces, Next.js 16.2.11 App Router, React 19.2.8, TypeScript strict mode, Supabase Auth/Postgres/RLS/Realtime, OpenAI through `packages/ai`, Zod, Vitest 4.1.11, Testing Library, Playwright, Tailwind CSS 4, `@remixicon/react` 4.9.0.
+**Tech Stack:** Node.js 24 LTS, pnpm workspaces, Next.js 16.3.4 App Router, React 19.2.8, TypeScript strict mode, Supabase Auth/Postgres/RLS/Realtime, OpenAI through `packages/ai`, Zod, Vitest 4.1.11, Testing Library, Playwright, Tailwind CSS 4, `@remixicon/react` 4.9.0.
 
 **Spec:** `docs/superpowers/specs/2026-09-02-general-ai-knowledge-base-design.md`
 

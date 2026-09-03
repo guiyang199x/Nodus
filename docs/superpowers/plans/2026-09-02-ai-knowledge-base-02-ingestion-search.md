@@ -6,7 +6,7 @@
 
 **Architecture:** The authenticated Next.js app completes a pre-created upload session and enqueues a message containing only `job_id`. A separately deployed Node worker claims that job through lease-protected, audited Postgres functions, downloads only the fixed object path returned by the claim, and writes stage results through narrow RPCs; draft data is keyed by processing job, so the last successful revision remains live until a transaction publishes the new run. Search first establishes one authorized workspace, then fuses workspace-filtered lexical/CJK and pgvector ranks with Reciprocal Rank Fusion.
 
-**Tech Stack:** Node.js 24 LTS, TypeScript strict mode, pnpm workspaces, Next.js 16.2.11 App Router, React 19.2.8, Supabase Auth/Postgres/RLS/Private Storage/Queues, pgvector, `@supabase/supabase-js`, Zod, OpenAI SDK behind an adapter, `file-type`, `sharp`, `pdfjs-dist`, `@napi-rs/canvas`, `jszip`, `fast-xml-parser`, `unified`, `remark-parse`, `mdast-util-to-string`, `js-tiktoken`, Vitest 4.1.11, pgTAP, and Playwright.
+**Tech Stack:** Node.js 24 LTS, TypeScript strict mode, pnpm workspaces, Next.js 16.3.4 App Router, React 19.2.8, Supabase Auth/Postgres/RLS/Private Storage/Queues, pgvector, `@supabase/supabase-js`, Zod, OpenAI SDK behind an adapter, `file-type`, `sharp`, `pdfjs-dist`, `@napi-rs/canvas`, `jszip`, `fast-xml-parser`, `unified`, `remark-parse`, `mdast-util-to-string`, `js-tiktoken`, Vitest 4.1.11, pgTAP, and Playwright.
 
 **Spec:** `docs/superpowers/specs/2026-09-02-general-ai-knowledge-base-design.md`
 

@@ -6,7 +6,7 @@
 
 **Architecture:** A pnpm monorepo contains a Next.js authenticated workspace, an independent long-running document worker, shared domain contracts, and provider-neutral AI adapters. Supabase supplies Auth, Postgres with RLS, Private Storage, Realtime, Queues, and pgvector; every read, derived artifact, graph edge, citation, cache key, and job remains inside one explicit workspace boundary.
 
-**Tech Stack:** Node.js 24 LTS, pnpm workspaces, Next.js 16.2.11 App Router, React 19.2.8, TypeScript strict mode, Tailwind CSS 4, Supabase JS 2.112.4, isolated `@supabase/ssr`, Postgres/RLS/Private Storage/Realtime/Queues/pgvector, OpenAI behind adapters, Zod, Vitest 4.1.11, Testing Library, Playwright, pgTAP, `@remixicon/react` 4.9.0, `@xyflow/react`, OpenTelemetry, Pino, Lighthouse CI, k6, Docker, GitHub Actions.
+**Tech Stack:** Node.js 24 LTS, pnpm workspaces, Next.js 16.3.4 App Router, React 19.2.8, TypeScript strict mode, Tailwind CSS 4, Supabase JS 2.112.4, isolated `@supabase/ssr`, Postgres/RLS/Private Storage/Realtime/Queues/pgvector, OpenAI behind adapters, Zod, Vitest 4.1.11, Testing Library, Playwright, pgTAP, `@remixicon/react` 4.9.0, `@xyflow/react`, OpenTelemetry, Pino, Lighthouse CI, k6, Docker, GitHub Actions.
 
 **Spec:** `docs/superpowers/specs/2026-09-02-general-ai-knowledge-base-design.md`
 
@@ -323,6 +323,20 @@ Expected: no P0/P1 defect exists, all numeric thresholds pass, active deletion i
 - A new AI provider or model changes only adapter/configuration and evaluation evidence; it cannot change tenant, evidence, citation, or persistence rules.
 - A scope addition from Section 3.2 or Section 20 of the specification requires a new approved specification and implementation plan, not an opportunistic task in these five plans.
 - Test fixtures are synthetic and must never be copied from user or production content.
+
+## Implementation Deviations from the Written Pins
+
+Recorded during Plan 01 execution; every later plan follows this table, not the
+original pins.
+
+| Written in the plans                          | Actually used                                              | Reason                                                                                                                                                                                                  |
+| --------------------------------------------- | ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Next.js 16.2.11                               | **16.3.4**                                                 | `16.2.11` was never verified against the registry; `16.3.4` is the current `latest` and still provides the Next 16 `proxy.ts` entry Plan 01 Task 4 depends on.                                          |
+| zod 4.5.4                                     | **3.25.76**                                                | zod 4.5.4 is not published; the newest published line is 4.1.x. 3.25.x already ships the v4 core under `zod/v4`, and the Task 1 contracts pass on it. Revisit only if a later task needs a v4-only API. |
+| pnpm 10.15.1                                  | **9.x**                                                    | No plan step depends on pnpm 10/11 semantics; the committed lockfile installs clean and green on 9.                                                                                                     |
+| `vitest.workspace.ts` with `defineWorkspace`  | **`vitest.config.ts` with `test.projects`**                | Vitest 4 removed the workspace file and `defineWorkspace`. `test.projects` is the supported equivalent and aggregates the same package configs.                                                         |
+| `tsconfig.base.json` as the only base         | **`tsconfig.base.json`, extended by root `tsconfig.json`** | The base carries exactly the strictness the plans specify; the root adds path aliases and emit flags so package tsconfigs keep extending one file.                                                      |
+| pnpm root package named `knowledge-workspace` | **`ai-knowledge-base`**                                    | Cosmetic; the workspace protocol and `@knowledge/*` package names, which the plans actually reference, are unchanged.                                                                                   |
 
 ## Master Completion Gate
 

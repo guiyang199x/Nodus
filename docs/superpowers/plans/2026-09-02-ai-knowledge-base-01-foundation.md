@@ -6,7 +6,7 @@
 
 **Architecture:** 使用 pnpm monorepo 承载 Next.js Web 与共享领域契约；Supabase Auth 负责身份，Postgres/RLS 是工作区成员关系和权限事实来源，所有成员变更经受审计的 RPC 完成。浏览器只拿到固定对象路径的短时上传令牌，服务端先持久化 Document、Revision 与 UploadSession，再用仅服务端可见的 Storage 管理凭据为已验证路径签名。
 
-**Tech Stack:** Node.js 24 LTS、pnpm、Next.js 16.2.11 App Router、React 19.2.8、TypeScript strict、Tailwind CSS 4、Vitest 4.1.11、Testing Library、Playwright、Supabase Auth/Postgres/RLS/Private Storage、Zod、Resend、官方 `@remixicon/react` 4.9.0。
+**Tech Stack:** Node.js 24 LTS、pnpm、Next.js 16.3.4 App Router、React 19.2.8、TypeScript strict、Tailwind CSS 4、Vitest 4.1.11、Testing Library、Playwright、Supabase Auth/Postgres/RLS/Private Storage、Zod、Resend、官方 `@remixicon/react` 4.9.0。
 
 **Spec:** `docs/superpowers/specs/2026-09-02-general-ai-knowledge-base-design.md`
 
@@ -113,7 +113,7 @@
 - Consumes: 无；这是全仓首个可执行边界。
 - Produces: `WorkspaceRole`、`WorkspaceKind`、`Capability`、`WorkspaceContext`、`ActionResult<T>`、`hasCapability(role, capability): boolean`、`UploadFileInput`、`CreateUploadSessionsInput`、`UploadSession`、`parseUploadBatch(input): CreateUploadSessionsInput`。
 
-- [ ] **Step 1: 建立工具链文件和会失败的领域测试**
+- [x] **Step 1: 建立工具链文件和会失败的领域测试**
 
 ```json
 // package.json
@@ -227,13 +227,13 @@ describe('upload contract', () => {
 });
 ```
 
-- [ ] **Step 2: 运行测试并确认领域入口尚不存在**
+- [x] **Step 2: 运行测试并确认领域入口尚不存在**
 
 Run: `corepack enable && pnpm install && pnpm --filter @knowledge/domain test`
 
 Expected: FAIL，Vitest 报告无法解析 `./workspaces` 与 `./uploads`。
 
-- [ ] **Step 3: 写入最小而完整的共享领域契约**
+- [x] **Step 3: 写入最小而完整的共享领域契约**
 
 ```ts
 // packages/domain/src/workspaces.ts
@@ -404,13 +404,13 @@ import { defineConfig } from 'vitest/config';
 export default defineConfig({ test: { environment: 'node', include: ['src/**/*.test.ts'] } });
 ```
 
-- [ ] **Step 4: 运行领域测试和类型检查**
+- [x] **Step 4: 运行领域测试和类型检查**
 
 Run: `pnpm --filter @knowledge/domain test && pnpm --filter @knowledge/domain typecheck`
 
 Expected: PASS；角色矩阵和上传批量/格式/大小规则全部通过。
 
-- [ ] **Step 5: 提交共享契约**
+- [x] **Step 5: 提交共享契约**
 
 ```bash
 git add .nvmrc .npmrc package.json pnpm-workspace.yaml tsconfig.base.json vitest.workspace.ts packages/domain pnpm-lock.yaml
@@ -431,7 +431,7 @@ git commit -m "chore: bootstrap knowledge workspace contracts"
 - Consumes: `WorkspaceRole` and `WorkspaceKind` string values from Task 1.
 - Produces: tables `profiles`, `workspaces`, `memberships`, `invitations`, `audit_events`; enums `workspace_role`, `workspace_kind`, `workspace_state`, `membership_status`; trigger `private.handle_new_user()`; invariant function `private.assert_single_workspace_owner(uuid)`.
 
-- [ ] **Step 1: 初始化本地 Supabase 配置并写会失败的身份不变量测试**
+- [x] **Step 1: 初始化本地 Supabase 配置并写会失败的身份不变量测试**
 
 Run: `pnpm exec supabase init`
 
@@ -504,13 +504,13 @@ select * from extensions.finish();
 rollback;
 ```
 
-- [ ] **Step 2: 启动本地依赖并确认数据库对象不存在**
+- [x] **Step 2: 启动本地依赖并确认数据库对象不存在**
 
 Run: `pnpm db:start && pnpm db:reset && pnpm exec supabase test db supabase/tests/0002_identity_workspaces.test.sql`
 
 Expected: FAIL，首个断言前报告 `relation "public.profiles" does not exist`。
 
-- [ ] **Step 3: 创建扩展、身份表和所有权约束**
+- [x] **Step 3: 创建扩展、身份表和所有权约束**
 
 ```sql
 -- supabase/migrations/0001_extensions.sql
@@ -684,13 +684,13 @@ create trigger on_auth_user_created
 after insert on auth.users for each row execute function private.handle_new_user();
 ```
 
-- [ ] **Step 4: 重建数据库并验证触发器与约束**
+- [x] **Step 4: 重建数据库并验证触发器与约束**
 
 Run: `pnpm db:reset && pnpm exec supabase test db supabase/tests/0002_identity_workspaces.test.sql`
 
 Expected: PASS，7 个断言通过；新用户只有一个个人空间和一个 Owner Membership。
 
-- [ ] **Step 5: 提交身份数据模型**
+- [x] **Step 5: 提交身份数据模型**
 
 ```bash
 git add supabase/config.toml supabase/migrations/0001_extensions.sql supabase/migrations/0002_identity_workspaces.sql supabase/tests/0002_identity_workspaces.test.sql
