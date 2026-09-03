@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
 import { AppShell } from './app-shell';
@@ -37,7 +37,7 @@ describe('AppShell', () => {
     expect(screen.getByText('内容')).toBeVisible();
   });
 
-  it('keeps every navigation target inside the current workspace', () => {
+  it('keeps every main navigation target inside the current workspace', () => {
     render(
       <AppShell
         context={context}
@@ -46,8 +46,26 @@ describe('AppShell', () => {
         <p>内容</p>
       </AppShell>
     );
-    for (const link of screen.getAllByRole('link')) {
+    const nav = screen.getByRole('navigation', { name: '主导航' });
+    const links = within(nav).getAllByRole('link');
+    expect(links.length).toBeGreaterThan(0);
+    for (const link of links) {
       expect(link.getAttribute('href')).toMatch(new RegExp(`^/w/${context.workspaceId}/`));
     }
+  });
+
+  it('keeps team creation outside any workspace, since it belongs to none', () => {
+    render(
+      <AppShell
+        context={context}
+        workspaces={[{ id: context.workspaceId, name: 'Team One', kind: 'team', role: 'owner' }]}
+      >
+        <p>内容</p>
+      </AppShell>
+    );
+    expect(screen.getByRole('link', { name: '新建团队' })).toHaveAttribute(
+      'href',
+      '/workspaces/new'
+    );
   });
 });

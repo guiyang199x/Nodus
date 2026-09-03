@@ -73,6 +73,14 @@ export function AppShell({ context, workspaces, children }: AppShellProps) {
           </button>
         </div>
 
+        <Link
+          href="/workspaces/new"
+          onClick={() => setOpen(false)}
+          className="mt-1 flex min-h-11 items-center rounded-[var(--radius-control)] px-2 text-sm text-[var(--muted)] hover:bg-[var(--hover)]"
+        >
+          新建团队
+        </Link>
+
         <nav aria-label="主导航" className="mt-3 space-y-0.5">
           {links.map(([label, href, icon]) => (
             <Link

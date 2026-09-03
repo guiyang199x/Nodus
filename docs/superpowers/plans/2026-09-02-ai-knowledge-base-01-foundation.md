@@ -2379,7 +2379,7 @@ git commit -m "feat: add responsive knowledge workspace shell"
 - Consumes: `ActionResult<T>`, `WorkspaceRole`, `requireWorkspaceCapability(...)`; all workspace/member/invitation RPCs from Task 3.
 - Produces: `InvitationMailer.send(input: InvitationEmail): Promise<void>`; `inviteMember(client, mailer, input): Promise<ActionResult<{ invitationId: string; expiresAt: string }>>`; `createTeamWorkspaceAction(input): Promise<ActionResult<{ workspaceId: string }>>`; `createInvitationAction(input): Promise<ActionResult<{ invitationId: string; expiresAt: string }>>`; member actions for role change, removal and ownership transfer.
 
-- [ ] **Step 1: 写邀请令牌只进入邮件、发送失败即撤销的失败测试**
+- [x] **Step 1: 写邀请令牌只进入邮件、发送失败即撤销的失败测试**
 
 ```ts
 // apps/web/src/features/workspaces/invitation-service.test.ts
@@ -2468,13 +2468,13 @@ describe('inviteMember', () => {
 });
 ```
 
-- [ ] **Step 2: 运行邀请测试并确认服务尚不存在**
+- [x] **Step 2: 运行邀请测试并确认服务尚不存在**
 
 Run: `pnpm --filter @knowledge/web add resend@6.25.0 --save-exact && pnpm --filter @knowledge/web test -- src/features/workspaces/invitation-service.test.ts`
 
 Expected: FAIL，报告无法解析 `./invitation-service`。
 
-- [ ] **Step 3: 实现厂商隔离的纯文本邀请邮件和单次令牌服务**
+- [x] **Step 3: 实现厂商隔离的纯文本邀请邮件和单次令牌服务**
 
 ```ts
 // apps/web/src/features/workspaces/invitation-mailer.ts
@@ -2572,7 +2572,7 @@ export async function inviteMember(
 }
 ```
 
-- [ ] **Step 4: 实现团队和成员 Server Actions，所有动作只调用数据库 RPC**
+- [x] **Step 4: 实现团队和成员 Server Actions，所有动作只调用数据库 RPC**
 
 ```ts
 // apps/web/src/features/workspaces/schemas.ts
@@ -2695,7 +2695,7 @@ export async function transferOwnershipAction(
 }
 ```
 
-- [ ] **Step 5: 实现成员读取、团队设置和邀请接受页面**
+- [x] **Step 5: 实现成员读取、团队设置和邀请接受页面**
 
 ```ts
 // apps/web/src/features/workspaces/member-queries.ts
@@ -3018,13 +3018,13 @@ export default async function MembersPage({
 </Link>
 ```
 
-- [ ] **Step 6: 运行邀请单元测试、数据库角色矩阵和生产构建**
+- [x] **Step 6: 运行邀请单元测试、数据库角色矩阵和生产构建**
 
 Run: `pnpm --filter @knowledge/web test -- src/features/workspaces/invitation-service.test.ts && pnpm test:db && pnpm --filter @knowledge/web typecheck && pnpm --filter @knowledge/web build`
 
 Expected: PASS；邮件失败会撤销邀请，浏览器返回值不含原始令牌，四角色数据库断言保持通过。
 
-- [ ] **Step 7: 提交团队成员旅程**
+- [x] **Step 7: 提交团队成员旅程**
 
 ```bash
 git add apps/web/package.json apps/web/src/components/shell/app-shell.tsx apps/web/src/features/workspaces apps/web/src/app/invite apps/web/src/app/\(workspace\)/workspaces apps/web/src/app/\(workspace\)/w/\[workspaceId\]/settings pnpm-lock.yaml
