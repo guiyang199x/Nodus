@@ -16,6 +16,7 @@
     "test:watch": "vitest",
     "verify": "pnpm lint && pnpm typecheck && pnpm test",
     "test:db": "supabase test db",
+    "test:e2e": "playwright test",
     "build": "pnpm --filter @knowledge/web build && pnpm --filter @knowledge/worker build",
     "db:reset": "supabase db reset",
     "db:start": "supabase start",
@@ -24,11 +25,15 @@
     "db:types": "supabase gen types typescript --local > packages/domain/src/database.types.ts"
   },
   "devDependencies": {
+    "@playwright/test": "^1.62.1",
+    "@supabase/supabase-js": "^2.48.1",
+    "@types/node": "^24.0.0",
+    "@types/pg": "^8.23.1",
     "@typescript-eslint/eslint-plugin": "^8.0.0",
     "@typescript-eslint/parser": "^8.0.0",
     "eslint": "^9.0.0",
+    "pg": "^8.23.0",
     "prettier": "^3.0.0",
-    "@types/node": "^24.0.0",
     "typescript": "^5.6.0",
     "vitest": "4.1.11"
   },

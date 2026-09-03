@@ -3542,7 +3542,7 @@ git commit -m "feat: add scoped private upload sessions"
 - Consumes: `UploadSession`, `WorkspaceContext`, `hasCapability(...)`; `/api/uploads/sessions`; `/api/uploads/sessions/{sessionId}/complete`; browser `uploadToSignedUrl`.
 - Produces: `performUploadBatch(input): Promise<QueuedUpload[]>`; `UploadDialog({ context, onCompleted })`; immediately visible queued document rows; the Foundation fixture used by later slice acceptance suites.
 
-- [ ] **Step 1: 写团队可见警示和只读 Viewer 的失败组件测试**
+- [x] **Step 1: 写团队可见警示和只读 Viewer 的失败组件测试**
 
 ```tsx
 // apps/web/src/features/uploads/upload-dialog.test.tsx
@@ -3580,13 +3580,13 @@ describe('UploadDialog', () => {
 });
 ```
 
-- [ ] **Step 2: 运行组件测试并确认上传对话框不存在**
+- [x] **Step 2: 运行组件测试并确认上传对话框不存在**
 
 Run: `pnpm --filter @knowledge/web test -- src/features/uploads/upload-dialog.test.tsx`
 
 Expected: FAIL，报告无法解析 `./upload-dialog`。
 
-- [ ] **Step 3: 实现浏览器直传编排，路径和令牌只取自服务端响应**
+- [x] **Step 3: 实现浏览器直传编排，路径和令牌只取自服务端响应**
 
 ```ts
 // apps/web/src/features/uploads/browser-upload.ts
@@ -3658,7 +3658,7 @@ export async function performUploadBatch(input: {
 }
 ```
 
-- [ ] **Step 4: 实现上传对话框、当前工作区文档查询和上传后即时列表**
+- [x] **Step 4: 实现上传对话框、当前工作区文档查询和上传后即时列表**
 
 ```ts
 // apps/web/src/features/uploads/queries.ts
@@ -3901,7 +3901,7 @@ export default async function LibraryPage({
 }
 ```
 
-- [ ] **Step 5: 创建四宽度 Playwright 配置与可复用身份夹具**
+- [x] **Step 5: 创建四宽度 Playwright 配置与可复用身份夹具**
 
 ```ts
 // playwright.config.ts
@@ -4074,7 +4074,7 @@ export async function createKnownInvitation(
 export { admin };
 ```
 
-- [ ] **Step 6: 写完整 Foundation 端到端旅程**
+- [x] **Step 6: 写完整 Foundation 端到端旅程**
 
 ```ts
 // tests/e2e/auth-workspaces.spec.ts
@@ -4149,7 +4149,7 @@ test('viewer is read-only, editor sees the team warning and a verified upload ap
 });
 ```
 
-- [ ] **Step 7: 运行 Foundation 全门禁并检查浏览器包密钥**
+- [x] **Step 7: 运行 Foundation 全门禁并检查浏览器包密钥**
 
 Run: `pnpm lint && pnpm typecheck && pnpm test && pnpm test:db && pnpm --filter @knowledge/web build && pnpm test:e2e`
 
@@ -4159,7 +4159,7 @@ Run: `rg -n "SUPABASE_SERVICE_ROLE_KEY|RESEND_API_KEY" apps/web/.next/static app
 
 Expected: 浏览器静态产物无命中；服务端产物只在 `server-only` 模块引用变量名，不包含真实值。
 
-- [ ] **Step 8: 提交 Foundation 验收切片**
+- [x] **Step 8: 提交 Foundation 验收切片**
 
 ```bash
 git add apps/web/src/app/\(workspace\)/w/\[workspaceId\]/library apps/web/src/features/uploads playwright.config.ts tests/e2e

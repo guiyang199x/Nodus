@@ -1,9 +1,7 @@
-import { notFound } from 'next/navigation';
-
 import { AppShell } from '@/components/shell/app-shell';
 import { listAccessibleWorkspaces } from '@/features/workspaces/queries';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
-import { requireWorkspaceCapability } from '@/lib/workspaces/access';
+import { requireWorkspaceOr404 } from '@/lib/workspaces/require-or-404';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,10 +16,7 @@ export default async function WorkspaceLayout({
   const client = await createServerSupabaseClient();
   // The database decides membership; a denial is indistinguishable from a
   // workspace that does not exist.
-  const context = await requireWorkspaceCapability(client, workspaceId, 'documents.read').catch(
-    () => null
-  );
-  if (!context) notFound();
+  const context = await requireWorkspaceOr404(client, workspaceId, 'documents.read');
   const workspaces = await listAccessibleWorkspaces(client);
   return (
     <AppShell context={context} workspaces={workspaces}>

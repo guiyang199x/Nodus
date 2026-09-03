@@ -67,3 +67,8 @@ logs
 # Optional: Keep pnpm-lock.yaml for reproducible builds
 # Uncomment to ignore it in solo development
 # pnpm-lock.yaml
+
+# Playwright
+test-results
+playwright-report
+.playwright

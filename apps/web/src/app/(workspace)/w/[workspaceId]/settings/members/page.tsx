@@ -1,7 +1,7 @@
 import { MemberManager } from '@/features/workspaces/member-manager';
 import { getMemberSettings } from '@/features/workspaces/member-queries';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
-import { requireWorkspaceCapability } from '@/lib/workspaces/access';
+import { requireWorkspaceOr404 } from '@/lib/workspaces/require-or-404';
 
 export const metadata = { title: '成员与邀请' };
 export const dynamic = 'force-dynamic';
@@ -13,7 +13,7 @@ export default async function MembersPage({
 }) {
   const { workspaceId } = await params;
   const client = await createServerSupabaseClient();
-  const context = await requireWorkspaceCapability(client, workspaceId, 'documents.read');
+  const context = await requireWorkspaceOr404(client, workspaceId, 'documents.read');
   const settings = await getMemberSettings(client, workspaceId);
   return (
     <div className="page-content">
