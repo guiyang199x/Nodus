@@ -28,8 +28,9 @@ export const config = {
   // OpenAI configuration
   openai: {
     apiKey: process.env.OPENAI_API_KEY!,
-    knowledgeModel: process.env.OPENAI_KNOWLEDGE_MODEL || 'gpt-4o-2024-11-20',
-    visualModel: process.env.OPENAI_VISUAL_MODEL || 'gpt-4o',
+    baseURL: process.env.OPENAI_BASE_URL || 'https://api.openai.com/v1',
+    knowledgeModel: process.env.OPENAI_KNOWLEDGE_MODEL || 'deepseek-v4-pro',
+    visualModel: process.env.OPENAI_VISUAL_MODEL || 'deepseek-v4-flash-vision-exp',
     embeddingModel: process.env.OPENAI_EMBEDDING_MODEL || 'text-embedding-3-small',
     maxRetries: 3,
     timeout: 60000,
@@ -37,7 +38,7 @@ export const config = {
 
   // Supabase configuration
   supabase: {
-    url: process.env.SUPABASE_URL!,
+    url: process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL ?? '',
     serviceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY!,
   },
 

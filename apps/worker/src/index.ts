@@ -16,69 +16,58 @@
 
 import { createClient } from '@supabase/supabase-js';
 
-// Environment variables validation
-const requiredEnvVars = [
-  'SUPABASE_URL',
-  'SUPABASE_SERVICE_ROLE_KEY',
-  'OPENAI_API_KEY',
-] as const;
+const supabaseUrl = process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL;
+const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-for (const envVar of requiredEnvVars) {
-  if (!process.env[envVar]) {
-    console.error(`❌ Missing required environment variable: ${envVar}`);
-    process.exit(1);
-  }
+if (!supabaseUrl || !serviceRoleKey) {
+  console.error('Missing required environment variable: SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY');
+  process.exit(1);
 }
 
-const supabase = createClient(
-  process.env.SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+const supabase = createClient(supabaseUrl, serviceRoleKey, {
+  auth: {
+    autoRefreshToken: false,
+    persistSession: false,
+  },
+});
 
 /**
  * Worker main loop
  */
 async function main() {
-  console.log('🚀 AI Knowledge Base Worker starting...');
-  console.log('📊 Environment:', process.env.NODE_ENV || 'development');
-  console.log('🔗 Supabase URL:', process.env.SUPABASE_URL);
+  console.warn('AI Knowledge Base Worker starting...');
+  console.warn('Environment:', process.env.NODE_ENV || 'development');
+  console.warn('Supabase URL:', supabaseUrl);
 
-  // Verify Supabase connection
-  try {
-    const { error } = await supabase.from('_migrations').select('version').limit(1);
-    if (error) {
-      console.error('❌ Failed to connect to Supabase:', error.message);
-      process.exit(1);
-    }
-    console.log('✅ Connected to Supabase');
-  } catch (err) {
-    console.error('❌ Supabase connection error:', err);
+  const healthUrl = new URL('/auth/v1/health', supabaseUrl);
+  const health = await fetch(healthUrl);
+  if (!health.ok) {
+    console.error('Failed to reach Supabase Auth health:', health.status);
     process.exit(1);
   }
+  console.warn('Connected to Supabase');
 
-  // TODO: Implement job polling and processing
-  // This will be implemented in Plan 02: Ingestion & Search
-  console.log('⏳ Worker loop not yet implemented');
-  console.log('📝 Will be implemented in Plan 02');
+  // Keep the client constructed so Plan 02 can poll without rewiring imports.
+  void supabase;
 
-  // For now, just keep the process alive in development
+  console.warn('Worker loop not yet implemented (Plan 02)');
+
   if (process.env.NODE_ENV === 'development') {
-    console.log('🔄 Development mode: Worker ready for implementation');
-    // Keep process alive
+    console.warn('Development mode: worker process kept alive');
     setInterval(() => {
-      // Placeholder - will be replaced with actual job polling
-    }, 60000);
+      // Placeholder until queue polling exists
+    }, 60_000);
   }
 }
 
 // Handle graceful shutdown
 process.on('SIGTERM', () => {
-  console.log('📡 SIGTERM received, shutting down gracefully...');
+  console.warn('SIGTERM received, shutting down gracefully...');
   process.exit(0);
 });
 
 process.on('SIGINT', () => {
-  console.log('📡 SIGINT received, shutting down gracefully...');
+  console.warn('SIGINT received, shutting down gracefully...');
   process.exit(0);
 });
 

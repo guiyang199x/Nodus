@@ -9,7 +9,7 @@ export default function HomePage() {
         <div className="mt-8 p-4 border border-gray-300 rounded-lg">
           <h2 className="text-2xl font-semibold mb-2">Next Steps:</h2>
           <ul className="list-disc list-inside space-y-2">
-            <li>Configure your OpenAI API key in .env.local</li>
+            <li>AI provider is DeepSeek via OPENAI_BASE_URL in .env.local</li>
             <li>Start implementing Plan 01: Foundation</li>
             <li>Build authentication and workspace features</li>
           </ul>

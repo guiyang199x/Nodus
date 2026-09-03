@@ -23,9 +23,11 @@ console.log('=' .repeat(60));
 const requiredVars = [
   'NEXT_PUBLIC_SUPABASE_URL',
   'NEXT_PUBLIC_SUPABASE_ANON_KEY',
+  'SUPABASE_URL',
   'SUPABASE_SERVICE_ROLE_KEY',
   'DATABASE_URL',
   'OPENAI_API_KEY',
+  'OPENAI_BASE_URL',
   'OPENAI_KNOWLEDGE_MODEL',
   'OPENAI_VISUAL_MODEL',
   'OPENAI_EMBEDDING_MODEL',
@@ -54,9 +56,7 @@ requiredVars.forEach((varName) => {
   // Mask sensitive values
   let displayValue = value || '(not set)';
   if (varName.includes('KEY') || varName.includes('SECRET')) {
-    if (value && value.length > 10) {
-      displayValue = value.substring(0, 8) + '...' + value.substring(value.length - 4);
-    }
+    displayValue = value ? `set (ends …${value.slice(-4)})` : '(not set)';
   }
 
   console.log(`${status} ${varName}`);
@@ -65,8 +65,7 @@ requiredVars.forEach((varName) => {
 
 console.log('=' .repeat(60));
 if (allValid) {
-  console.log('✅ All required environment variables are set!\n');
-  console.log('⚠️  Remember to replace the OpenAI API key placeholder with your actual key.');
+  console.log('All required environment variables are set.\n');
   process.exit(0);
 } else {
   console.log('❌ Some environment variables are missing or not configured.\n');
