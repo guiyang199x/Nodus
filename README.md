@@ -2,7 +2,7 @@
 
 Multi-user AI knowledge workspace: private personal spaces, team workspaces, document processing, hybrid search, and grounded chat.
 
-This repository is a pnpm monorepo. [Plan 01 — Foundation](docs/superpowers/plans/2026-09-02-ai-knowledge-base-01-foundation.md) Tasks 1–3 are done: shared contracts are locked, and the identity/workspace schema, the four-role capability matrix, RLS, and the audited membership RPCs are migrated and covered by 26 pgTAP assertions. Task 4 (SSR authentication and the shared permission gate) is next.
+This repository is a pnpm monorepo. [Plan 01 — Foundation](docs/superpowers/plans/2026-09-02-ai-knowledge-base-01-foundation.md) Tasks 1–4 are done: shared contracts are locked; the identity/workspace schema, the four-role capability matrix, RLS, and the audited membership RPCs are migrated and covered by 26 pgTAP assertions; and email-OTP / Google sign-in, the session proxy, and the server-side permission gate are in place. Task 5 (the responsive workspace shell) is next.
 
 ## Requirements
 
@@ -39,7 +39,7 @@ See [`.env.README.md`](.env.README.md) for every variable.
 ## Common commands
 
 ```bash
-pnpm dev:web          # Next.js at http://localhost:3000
+pnpm dev:web          # Next.js at http://127.0.0.1:3000 (redirects to /login)
 pnpm dev:worker       # Worker (Plan 02 implementation still pending)
 pnpm lint
 pnpm typecheck

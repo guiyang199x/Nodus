@@ -1178,7 +1178,7 @@ git commit -m "feat: enforce workspace rbac and rls"
 - Consumes: `ActionResult<T>`, `Capability`, `WorkspaceContext`, `WorkspaceContextSchema`; generated `Database`; RPCs `assert_workspace_capability` and `resolve_entry_workspace`.
 - Produces: `createBrowserSupabaseClient(): SupabaseClient<Database>`; `createServerSupabaseClient(): Promise<SupabaseClient<Database>>`; `requireWorkspaceCapability(client: SupabaseClient<Database>, workspaceId: string, capability: Capability): Promise<WorkspaceContext>`; `requestEmailOtp(auth, input): Promise<ActionResult<undefined>>`; `beginGoogleSignIn(auth, input): Promise<ActionResult<{ url: string }>>`.
 
-- [ ] **Step 1: 创建 Web 清单、测试环境和会失败的认证/权限门测试**
+- [x] **Step 1: 创建 Web 清单、测试环境和会失败的认证/权限门测试**
 
 ```json
 // apps/web/package.json
@@ -1376,13 +1376,13 @@ describe('requireWorkspaceCapability', () => {
 });
 ```
 
-- [ ] **Step 2: 安装 Web 依赖并确认实现入口不存在**
+- [x] **Step 2: 安装 Web 依赖并确认实现入口不存在**
 
 Run: `pnpm install && pnpm --filter @knowledge/web test -- src/features/auth/service.test.ts src/lib/workspaces/access.test.ts`
 
 Expected: FAIL，报告无法解析 `./service` 与 `./access`。
 
-- [ ] **Step 3: 封装环境和 Supabase SSR 边界**
+- [x] **Step 3: 封装环境和 Supabase SSR 边界**
 
 ```dotenv
 # .env.example
@@ -1487,7 +1487,7 @@ export const config = {
 };
 ```
 
-- [ ] **Step 4: 实现稳定的权限门和认证服务**
+- [x] **Step 4: 实现稳定的权限门和认证服务**
 
 ```ts
 // apps/web/src/lib/workspaces/access.ts
@@ -1566,7 +1566,7 @@ export async function beginGoogleSignIn(
 }
 ```
 
-- [ ] **Step 5: 实现登录 Server Actions、回调和登录后直接进入工作台**
+- [x] **Step 5: 实现登录 Server Actions、回调和登录后直接进入工作台**
 
 ```ts
 // apps/web/src/features/auth/actions.ts
@@ -1734,13 +1734,13 @@ export default async function LoginPage({
 }
 ```
 
-- [ ] **Step 6: 运行认证、权限门、数据库和类型测试**
+- [x] **Step 6: 运行认证、权限门、数据库和类型测试**
 
 Run: `pnpm --filter @knowledge/web test -- src/features/auth/service.test.ts src/lib/workspaces/access.test.ts && pnpm --filter @knowledge/web typecheck && pnpm test:db`
 
 Expected: PASS；Google provider 固定为 `google`，权限拒绝不会被前端角色猜测绕过，数据库测试仍全部通过。
 
-- [ ] **Step 7: 提交登录与服务端权限门**
+- [x] **Step 7: 提交登录与服务端权限门**
 
 ```bash
 git add .env.example apps/web package.json pnpm-lock.yaml

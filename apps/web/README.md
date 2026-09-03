@@ -51,7 +51,7 @@ This app uses environment variables from the workspace root (`.env.local`).
 
 Required variables:
 - `NEXT_PUBLIC_SUPABASE_URL` - Supabase project URL
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY` - Supabase anonymous key
+- `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` - Supabase publishable key
 
 See `../../.env.README.md` for configuration details.
 

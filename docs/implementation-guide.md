@@ -145,7 +145,7 @@ OPENAI_EMBEDDING_MODEL=text-embedding-3-small
 
 # Web环境变量（Next.js）
 NEXT_PUBLIC_SUPABASE_URL=http://localhost:54321
-NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_...
 
 # Worker环境变量
 SUPABASE_URL=http://localhost:54321

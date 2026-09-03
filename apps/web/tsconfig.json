@@ -1,9 +1,11 @@
 {
-  "extends": "../../tsconfig.json",
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "jsx": "preserve",
-    "allowJs": true,
     "noEmit": true,
+    "incremental": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
     "forceConsistentCasingInFileNames": true,
     "plugins": [
       {
@@ -13,31 +15,14 @@
     "paths": {
       "@/*": [
         "./src/*"
-      ],
-      "@knowledge/domain": [
-        "../../packages/domain/src"
-      ],
-      "@knowledge/domain/*": [
-        "../../packages/domain/src/*"
-      ],
-      "@knowledge/ai": [
-        "../../packages/ai/src"
-      ],
-      "@knowledge/ai/*": [
-        "../../packages/ai/src/*"
-      ],
-      "@knowledge/observability": [
-        "../../packages/observability/src"
-      ],
-      "@knowledge/observability/*": [
-        "../../packages/observability/src/*"
       ]
     },
-    "lib": [
-      "DOM",
-      "DOM.Iterable",
-      "ES2023"
-    ]
+    "types": [
+      "node",
+      "@testing-library/jest-dom"
+    ],
+    "allowJs": true,
+    "esModuleInterop": true
   },
   "include": [
     "next-env.d.ts",

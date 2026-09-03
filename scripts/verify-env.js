@@ -22,7 +22,8 @@ console.log('=' .repeat(60));
 // Parse and check required variables
 const requiredVars = [
   'NEXT_PUBLIC_SUPABASE_URL',
-  'NEXT_PUBLIC_SUPABASE_ANON_KEY',
+  'NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY',
+  'APP_URL',
   'SUPABASE_URL',
   'SUPABASE_SERVICE_ROLE_KEY',
   'DATABASE_URL',
