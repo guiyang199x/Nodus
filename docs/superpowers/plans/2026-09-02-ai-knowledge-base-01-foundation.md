@@ -3049,7 +3049,7 @@ git commit -m "feat: add team invitations and member roles"
 - Consumes: `CreateUploadSessionsInput`, `UploadSession`, `parseUploadBatch(...)`, `requireWorkspaceCapability(...)`; tables and access functions from Tasks 2–3.
 - Produces: tables `documents`, `document_revisions`, `upload_sessions`; enum `document_revision_state`; RPCs `create_upload_batch(uuid, jsonb, uuid)`, `complete_upload_session(uuid, uuid)`, `abort_upload_sessions(uuid[], uuid)`; `createUploadSessions(client, signer, input, requestId): Promise<UploadSession[]>`; `completeUploadSession(client, sessionId, requestId): Promise<{ documentId: string; revisionId: string; status: "QUEUED" }>`.
 
-- [ ] **Step 1: 写上传角色、租户路径、限制和 Storage 直访的失败数据库测试**
+- [x] **Step 1: 写上传角色、租户路径、限制和 Storage 直访的失败数据库测试**
 
 ```sql
 -- supabase/tests/0004_private_upload_sessions.test.sql
@@ -3117,13 +3117,13 @@ select * from extensions.finish();
 rollback;
 ```
 
-- [ ] **Step 2: 运行数据库测试并确认上传表和 RPC 不存在**
+- [x] **Step 2: 运行数据库测试并确认上传表和 RPC 不存在**
 
 Run: `pnpm db:reset && pnpm exec supabase test db supabase/tests/0004_private_upload_sessions.test.sql`
 
 Expected: FAIL，报告 `function public.create_upload_batch(...) does not exist`。
 
-- [ ] **Step 3: 创建 Private Bucket、租户复合外键和上传状态表**
+- [x] **Step 3: 创建 Private Bucket、租户复合外键和上传状态表**
 
 ```sql
 -- supabase/migrations/0004_private_upload_sessions.sql (schema section)
@@ -3198,7 +3198,7 @@ values ('originals', 'originals', false, 52428800, array[
 ]) on conflict (id) do update set public = false, file_size_limit = excluded.file_size_limit, allowed_mime_types = excluded.allowed_mime_types;
 ```
 
-- [ ] **Step 4: 实现只接收已验证工作区的批量创建、完成和中止 RPC**
+- [x] **Step 4: 实现只接收已验证工作区的批量创建、完成和中止 RPC**
 
 ```sql
 -- supabase/migrations/0004_private_upload_sessions.sql (RPC section)
@@ -3305,7 +3305,7 @@ grant execute on function public.complete_upload_session(uuid, uuid) to authenti
 grant execute on function public.abort_upload_sessions(uuid[], uuid) to authenticated;
 ```
 
-- [ ] **Step 5: 写失败的服务测试，再实现受控签名器、服务和 Route Handlers**
+- [x] **Step 5: 写失败的服务测试，再实现受控签名器、服务和 Route Handlers**
 
 ```ts
 // apps/web/src/features/uploads/service.test.ts
@@ -3508,13 +3508,13 @@ export async function POST(
 }
 ```
 
-- [ ] **Step 6: 重建数据库、重新生成类型并验证上传服务**
+- [x] **Step 6: 重建数据库、重新生成类型并验证上传服务**
 
 Run: `pnpm db:reset && pnpm test:db && pnpm db:types && pnpm --filter @knowledge/web test -- src/features/uploads/service.test.ts && pnpm --filter @knowledge/web typecheck`
 
 Expected: PASS；数据库共 35 个断言通过，签名器只收到数据库生成路径，`SUPABASE_SERVICE_ROLE_KEY` 只出现在 `server-only` 模块。
 
-- [ ] **Step 7: 提交私有上传后端**
+- [x] **Step 7: 提交私有上传后端**
 
 ```bash
 git add supabase/migrations/0004_private_upload_sessions.sql supabase/tests/0004_private_upload_sessions.test.sql packages/domain/src/database.types.ts apps/web/src/lib/supabase/admin.ts apps/web/src/features/uploads apps/web/src/app/api/uploads

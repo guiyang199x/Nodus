@@ -44,7 +44,9 @@ export const UploadSessionSchema = z.object({
   revisionId: z.string().uuid(),
   objectPath: z.string().min(1),
   uploadToken: z.string().min(1),
-  expiresAt: z.string().datetime(),
+  // PostgREST renders timestamptz with a numeric offset (+00:00), not a Z
+  // suffix, and plain .datetime() rejects offsets.
+  expiresAt: z.string().datetime({ offset: true }),
 });
 export type UploadSession = z.infer<typeof UploadSessionSchema>;
 

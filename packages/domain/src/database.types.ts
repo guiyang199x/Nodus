@@ -94,6 +94,121 @@ export type Database = {
           },
         ]
       }
+      document_revisions: {
+        Row: {
+          byte_size: number
+          created_at: string
+          created_by: string
+          declared_mime: string
+          document_id: string
+          id: string
+          object_bucket: string
+          object_path: string
+          original_name: string
+          state: Database["public"]["Enums"]["document_revision_state"]
+          version_number: number
+          workspace_id: string
+        }
+        Insert: {
+          byte_size: number
+          created_at?: string
+          created_by: string
+          declared_mime: string
+          document_id: string
+          id?: string
+          object_bucket?: string
+          object_path: string
+          original_name: string
+          state?: Database["public"]["Enums"]["document_revision_state"]
+          version_number?: number
+          workspace_id: string
+        }
+        Update: {
+          byte_size?: number
+          created_at?: string
+          created_by?: string
+          declared_mime?: string
+          document_id?: string
+          id?: string
+          object_bucket?: string
+          object_path?: string
+          original_name?: string
+          state?: Database["public"]["Enums"]["document_revision_state"]
+          version_number?: number
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_revisions_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "document_revisions_workspace_id_document_id_fkey"
+            columns: ["workspace_id", "document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["workspace_id", "id"]
+          },
+        ]
+      }
+      documents: {
+        Row: {
+          created_at: string
+          current_revision_id: string | null
+          id: string
+          status: Database["public"]["Enums"]["document_revision_state"]
+          title: string
+          updated_at: string
+          uploaded_by: string
+          workspace_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_revision_id?: string | null
+          id?: string
+          status?: Database["public"]["Enums"]["document_revision_state"]
+          title: string
+          updated_at?: string
+          uploaded_by: string
+          workspace_id: string
+        }
+        Update: {
+          created_at?: string
+          current_revision_id?: string | null
+          id?: string
+          status?: Database["public"]["Enums"]["document_revision_state"]
+          title?: string
+          updated_at?: string
+          uploaded_by?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "documents_current_revision_fk"
+            columns: ["workspace_id", "id", "current_revision_id"]
+            isOneToOne: false
+            referencedRelation: "document_revisions"
+            referencedColumns: ["workspace_id", "document_id", "id"]
+          },
+          {
+            foreignKeyName: "documents_uploaded_by_fkey"
+            columns: ["uploaded_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documents_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       invitations: {
         Row: {
           accepted_at: string | null
@@ -241,6 +356,83 @@ export type Database = {
           },
         ]
       }
+      upload_sessions: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          created_by: string
+          document_id: string
+          expected_mime: string
+          expected_size: number
+          expires_at: string
+          id: string
+          object_bucket: string
+          object_path: string
+          revision_id: string
+          state: Database["public"]["Enums"]["upload_session_state"]
+          workspace_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          created_by: string
+          document_id: string
+          expected_mime: string
+          expected_size: number
+          expires_at?: string
+          id?: string
+          object_bucket?: string
+          object_path: string
+          revision_id: string
+          state?: Database["public"]["Enums"]["upload_session_state"]
+          workspace_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string
+          document_id?: string
+          expected_mime?: string
+          expected_size?: number
+          expires_at?: string
+          id?: string
+          object_bucket?: string
+          object_path?: string
+          revision_id?: string
+          state?: Database["public"]["Enums"]["upload_session_state"]
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "upload_sessions_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "upload_sessions_workspace_id_document_id_fkey"
+            columns: ["workspace_id", "document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["workspace_id", "id"]
+          },
+          {
+            foreignKeyName: "upload_sessions_workspace_id_document_id_revision_id_fkey"
+            columns: ["workspace_id", "document_id", "revision_id"]
+            isOneToOne: false
+            referencedRelation: "document_revisions"
+            referencedColumns: ["workspace_id", "document_id", "id"]
+          },
+          {
+            foreignKeyName: "upload_sessions_workspace_id_revision_id_fkey"
+            columns: ["workspace_id", "revision_id"]
+            isOneToOne: false
+            referencedRelation: "document_revisions"
+            referencedColumns: ["workspace_id", "id"]
+          },
+        ]
+      }
       workspaces: {
         Row: {
           created_at: string
@@ -297,6 +489,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      abort_upload_sessions: {
+        Args: { correlation_id: string; target_session_ids: string[] }
+        Returns: number
+      }
       accept_invitation: {
         Args: { correlation_id: string; raw_token: string }
         Returns: string
@@ -322,6 +518,14 @@ export type Database = {
         }
         Returns: undefined
       }
+      complete_upload_session: {
+        Args: { correlation_id: string; target_session_id: string }
+        Returns: {
+          document_id: string
+          revision_id: string
+          status: Database["public"]["Enums"]["document_revision_state"]
+        }[]
+      }
       create_invitation: {
         Args: {
           correlation_id: string
@@ -342,6 +546,21 @@ export type Database = {
           workspace_slug: string
         }
         Returns: string
+      }
+      create_upload_batch: {
+        Args: {
+          correlation_id: string
+          input_files: Json
+          target_workspace_id: string
+        }
+        Returns: {
+          document_id: string
+          expires_at: string
+          object_path: string
+          revision_id: string
+          session_id: string
+          workspace_id: string
+        }[]
       }
       has_workspace_capability: {
         Args: {
@@ -397,7 +616,21 @@ export type Database = {
         | "members.manage_basic"
         | "members.manage_admin"
         | "workspace.delete"
+      document_revision_state:
+        | "UPLOADING"
+        | "QUEUED"
+        | "VALIDATING"
+        | "EXTRACTING"
+        | "CHUNKING"
+        | "ANALYZING"
+        | "INDEXING"
+        | "READY"
+        | "RETRYING"
+        | "FAILED"
+        | "CANCELLED"
+        | "SUPERSEDED"
       membership_status: "active" | "removed"
+      upload_session_state: "pending" | "completed" | "aborted" | "expired"
       workspace_kind: "personal" | "team"
       workspace_role: "owner" | "admin" | "editor" | "viewer"
       workspace_state: "ACTIVE" | "DELETION_SCHEDULED" | "PURGING" | "PURGED"
@@ -544,7 +777,22 @@ export const Constants = {
         "members.manage_admin",
         "workspace.delete",
       ],
+      document_revision_state: [
+        "UPLOADING",
+        "QUEUED",
+        "VALIDATING",
+        "EXTRACTING",
+        "CHUNKING",
+        "ANALYZING",
+        "INDEXING",
+        "READY",
+        "RETRYING",
+        "FAILED",
+        "CANCELLED",
+        "SUPERSEDED",
+      ],
       membership_status: ["active", "removed"],
+      upload_session_state: ["pending", "completed", "aborted", "expired"],
       workspace_kind: ["personal", "team"],
       workspace_role: ["owner", "admin", "editor", "viewer"],
       workspace_state: ["ACTIVE", "DELETION_SCHEDULED", "PURGING", "PURGED"],
