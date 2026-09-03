@@ -1775,7 +1775,7 @@ git commit -m "feat: add private workspace authentication entry"
 - Consumes: `requireWorkspaceCapability(...)`, `WorkspaceContext`, `createServerSupabaseClient()`, RPC `set_last_workspace`.
 - Produces: `WorkspaceSummary = { id: string; name: string; kind: WorkspaceKind; role: WorkspaceRole }`; `listAccessibleWorkspaces(client): Promise<WorkspaceSummary[]>`; `setLastWorkspaceAction(workspaceId: string): Promise<ActionResult<undefined>>`; `AppShellProps = { context: WorkspaceContext; workspaces: WorkspaceSummary[]; children: ReactNode }`.
 
-- [ ] **Step 1: 写工作台导航与有意义空状态的失败组件测试**
+- [x] **Step 1: 写工作台导航与有意义空状态的失败组件测试**
 
 ```tsx
 // apps/web/src/components/shell/app-shell.test.tsx
@@ -1836,13 +1836,13 @@ describe('EmptyState', () => {
 });
 ```
 
-- [ ] **Step 2: 运行组件测试并确认工作台组件不存在**
+- [x] **Step 2: 运行组件测试并确认工作台组件不存在**
 
 Run: `pnpm --filter @knowledge/web test -- src/components/shell/app-shell.test.tsx src/components/ui/empty-state.test.tsx`
 
 Expected: FAIL，报告无法解析 `app-shell` 与 `empty-state`。
 
-- [ ] **Step 3: 写入设计 token、字体、插画副本与统一图标组件**
+- [x] **Step 3: 写入设计 token、字体、插画副本与统一图标组件**
 
 Run:
 
@@ -2028,7 +2028,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
 }
 ```
 
-- [ ] **Step 4: 实现工作区查询、切换和响应式树状导航**
+- [x] **Step 4: 实现工作区查询、切换和响应式树状导航**
 
 ```ts
 // apps/web/src/features/workspaces/queries.ts
@@ -2213,7 +2213,7 @@ export function AppShell({ context, workspaces, children }: AppShellProps) {
 }
 ```
 
-- [ ] **Step 5: 把每个受保护页面绑定到单一工作区上下文**
+- [x] **Step 5: 把每个受保护页面绑定到单一工作区上下文**
 
 ```tsx
 // apps/web/src/app/(workspace)/w/[workspaceId]/layout.tsx
@@ -2343,13 +2343,13 @@ export default function PublishedQaPage() {
 }
 ```
 
-- [ ] **Step 6: 运行组件测试、类型检查和生产构建**
+- [x] **Step 6: 运行组件测试、类型检查和生产构建**
 
 Run: `pnpm --filter @knowledge/web test -- src/components/shell/app-shell.test.tsx src/components/ui/empty-state.test.tsx && pnpm --filter @knowledge/web typecheck && pnpm --filter @knowledge/web build`
 
 Expected: PASS；构建不包含第二套图标库，受保护页面均为动态渲染。
 
-- [ ] **Step 7: 提交工作台壳**
+- [x] **Step 7: 提交工作台壳**
 
 ```bash
 git add apps/web/src/app apps/web/src/components apps/web/src/features/workspaces apps/web/public/illustrations

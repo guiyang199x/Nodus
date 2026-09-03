@@ -2,7 +2,7 @@
 
 Multi-user AI knowledge workspace: private personal spaces, team workspaces, document processing, hybrid search, and grounded chat.
 
-This repository is a pnpm monorepo. [Plan 01 — Foundation](docs/superpowers/plans/2026-09-02-ai-knowledge-base-01-foundation.md) Tasks 1–4 are done: shared contracts are locked; the identity/workspace schema, the four-role capability matrix, RLS, and the audited membership RPCs are migrated and covered by 26 pgTAP assertions; and email-OTP / Google sign-in, the session proxy, and the server-side permission gate are in place. Task 5 (the responsive workspace shell) is next.
+This repository is a pnpm monorepo. [Plan 01 — Foundation](docs/superpowers/plans/2026-09-02-ai-knowledge-base-01-foundation.md) Tasks 1–5 are done: shared contracts are locked; the identity/workspace schema, the four-role capability matrix, RLS, and the audited membership RPCs are migrated and covered by 26 pgTAP assertions; email-OTP / Google sign-in, the session proxy, and the server-side permission gate are in place; and the responsive workspace shell serves the library, graph, chat, and Q&A routes. Task 6 (team creation, invitations, and member administration) is next.
 
 ## Requirements
 

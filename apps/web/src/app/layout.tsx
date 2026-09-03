@@ -5,15 +5,12 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: '知识工作台',
-  description: '让知识重新连接：登录后继续整理、发现与提问。',
+  title: { default: '知识工作台', template: '%s · 知识工作台' },
+  description: '默认私密的个人与团队知识空间',
+  referrer: 'strict-origin-when-cross-origin',
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="zh-CN" className={GeistSans.variable}>
       <body>{children}</body>
