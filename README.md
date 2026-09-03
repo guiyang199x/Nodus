@@ -2,7 +2,7 @@
 
 Multi-user AI knowledge workspace: private personal spaces, team workspaces, document processing, hybrid search, and grounded chat.
 
-This repository is a pnpm monorepo. [Plan 01 — Foundation](docs/superpowers/plans/2026-09-02-ai-knowledge-base-01-foundation.md) Tasks 1–2 are done: shared contracts are locked and the identity/workspace schema with its single-Owner invariant is migrated and covered by pgTAP. Task 3 (RLS and audited RPCs) is next.
+This repository is a pnpm monorepo. [Plan 01 — Foundation](docs/superpowers/plans/2026-09-02-ai-knowledge-base-01-foundation.md) Tasks 1–3 are done: shared contracts are locked, and the identity/workspace schema, the four-role capability matrix, RLS, and the audited membership RPCs are migrated and covered by 26 pgTAP assertions. Task 4 (SSR authentication and the shared permission gate) is next.
 
 ## Requirements
 
@@ -55,7 +55,7 @@ pnpm db:reset
 
 - Workspace roles, capabilities, and `hasCapability(role, capability)`
 - Upload batch parsing: 7 formats, 20 files per batch, 50 MB per file
-- Generated database types via `pnpm db:types`, produced from migrations `0001`–`0002`
+- Generated database types via `pnpm db:types`, produced from migrations `0001`–`0003`
 
 ## Documentation
 

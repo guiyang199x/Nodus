@@ -297,9 +297,106 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      accept_invitation: {
+        Args: { correlation_id: string; raw_token: string }
+        Returns: string
+      }
+      assert_workspace_capability: {
+        Args: {
+          requested_capability: Database["public"]["Enums"]["app_capability"]
+          target_workspace_id: string
+        }
+        Returns: {
+          kind: Database["public"]["Enums"]["workspace_kind"]
+          role: Database["public"]["Enums"]["workspace_role"]
+          user_id: string
+          workspace_id: string
+        }[]
+      }
+      change_member_role: {
+        Args: {
+          correlation_id: string
+          new_role: Database["public"]["Enums"]["workspace_role"]
+          target_user_id: string
+          target_workspace_id: string
+        }
+        Returns: undefined
+      }
+      create_invitation: {
+        Args: {
+          correlation_id: string
+          target_email: string
+          target_role: Database["public"]["Enums"]["workspace_role"]
+          target_workspace_id: string
+        }
+        Returns: {
+          expires_at: string
+          invitation_id: string
+          raw_token: string
+        }[]
+      }
+      create_team_workspace: {
+        Args: {
+          correlation_id: string
+          workspace_name: string
+          workspace_slug: string
+        }
+        Returns: string
+      }
+      has_workspace_capability: {
+        Args: {
+          requested_capability: Database["public"]["Enums"]["app_capability"]
+          target_workspace_id: string
+        }
+        Returns: boolean
+      }
+      leave_workspace: {
+        Args: { correlation_id: string; target_workspace_id: string }
+        Returns: undefined
+      }
+      remove_member: {
+        Args: {
+          correlation_id: string
+          target_user_id: string
+          target_workspace_id: string
+        }
+        Returns: undefined
+      }
+      resolve_entry_workspace: { Args: never; Returns: string }
+      revoke_invitation: {
+        Args: {
+          correlation_id: string
+          target_invitation_id: string
+          target_workspace_id: string
+        }
+        Returns: undefined
+      }
+      set_last_workspace: {
+        Args: { target_workspace_id: string }
+        Returns: undefined
+      }
+      transfer_workspace_ownership: {
+        Args: {
+          correlation_id: string
+          new_owner_user_id: string
+          target_workspace_id: string
+        }
+        Returns: undefined
+      }
     }
     Enums: {
+      app_capability:
+        | "documents.read"
+        | "documents.upload"
+        | "documents.trash"
+        | "documents.delete"
+        | "jobs.reprocess"
+        | "knowledge.write"
+        | "comments.write"
+        | "qa.publish"
+        | "members.manage_basic"
+        | "members.manage_admin"
+        | "workspace.delete"
       membership_status: "active" | "removed"
       workspace_kind: "personal" | "team"
       workspace_role: "owner" | "admin" | "editor" | "viewer"
@@ -434,6 +531,19 @@ export const Constants = {
   },
   public: {
     Enums: {
+      app_capability: [
+        "documents.read",
+        "documents.upload",
+        "documents.trash",
+        "documents.delete",
+        "jobs.reprocess",
+        "knowledge.write",
+        "comments.write",
+        "qa.publish",
+        "members.manage_basic",
+        "members.manage_admin",
+        "workspace.delete",
+      ],
       membership_status: ["active", "removed"],
       workspace_kind: ["personal", "team"],
       workspace_role: ["owner", "admin", "editor", "viewer"],

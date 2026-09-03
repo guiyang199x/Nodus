@@ -711,7 +711,7 @@ git commit -m "feat: add workspace identity invariants"
 - Consumes: tables and enums from Task 2; `Capability` string values from `@knowledge/domain`.
 - Produces: `public.has_workspace_capability(uuid, app_capability): boolean`; `public.assert_workspace_capability(uuid, app_capability)` returning `workspace_id, user_id, role, kind`; `public.resolve_entry_workspace(): uuid`; RPCs `create_team_workspace`, `set_last_workspace`, `create_invitation`, `accept_invitation`, `revoke_invitation`, `change_member_role`, `remove_member`, `leave_workspace`, `transfer_workspace_ownership`.
 
-- [ ] **Step 1: 写四角色、跨租户和成员变更的失败测试**
+- [x] **Step 1: 写四角色、跨租户和成员变更的失败测试**
 
 ```sql
 -- supabase/tests/0003_workspace_access.test.sql
@@ -791,13 +791,13 @@ select * from extensions.finish();
 rollback;
 ```
 
-- [ ] **Step 2: 运行权限测试并确认能力类型与 RPC 尚不存在**
+- [x] **Step 2: 运行权限测试并确认能力类型与 RPC 尚不存在**
 
 Run: `pnpm db:reset && pnpm exec supabase test db supabase/tests/0003_workspace_access.test.sql`
 
 Expected: FAIL，报告 `type public.app_capability does not exist` 或 `function public.has_workspace_capability(...) does not exist`。
 
-- [ ] **Step 3: 实现数据库能力矩阵、无递归 RLS 帮助函数与审计写入**
+- [x] **Step 3: 实现数据库能力矩阵、无递归 RLS 帮助函数与审计写入**
 
 ```sql
 -- supabase/migrations/0003_workspace_access.sql (first section)
@@ -881,7 +881,7 @@ end;
 $$;
 ```
 
-- [ ] **Step 4: 实现工作区、邀请和成员的事务型 RPC**
+- [x] **Step 4: 实现工作区、邀请和成员的事务型 RPC**
 
 ```sql
 -- supabase/migrations/0003_workspace_access.sql (second section)
@@ -1079,7 +1079,7 @@ end;
 $$;
 ```
 
-- [ ] **Step 5: 启用 RLS、移除直接写权限并只开放必要 RPC**
+- [x] **Step 5: 启用 RLS、移除直接写权限并只开放必要 RPC**
 
 ```sql
 -- supabase/migrations/0003_workspace_access.sql (final section)
@@ -1134,13 +1134,13 @@ After type generation, append the shared type-only export so Web and Worker use 
 export type { Database } from './database.types';
 ```
 
-- [ ] **Step 6: 重建数据库、运行全部数据库测试并生成类型**
+- [x] **Step 6: 重建数据库、运行全部数据库测试并生成类型**
 
 Run: `pnpm db:reset && pnpm test:db && pnpm db:types`
 
 Expected: PASS，Task 2 和 Task 3 的 24 个断言全部通过；`packages/domain/src/database.types.ts` 包含 `app_capability` 与所有 RPC 签名，`packages/domain/src/index.ts` 导出 `Database`。
 
-- [ ] **Step 7: 提交权限底座**
+- [x] **Step 7: 提交权限底座**
 
 ```bash
 git add supabase/migrations/0003_workspace_access.sql supabase/tests/0003_workspace_access.test.sql packages/domain/src/database.types.ts packages/domain/src/index.ts

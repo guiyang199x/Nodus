@@ -338,6 +338,25 @@ original pins.
 | `tsconfig.base.json` as the only base         | **`tsconfig.base.json`, extended by root `tsconfig.json`** | The base carries exactly the strictness the plans specify; the root adds path aliases and emit flags so package tsconfigs keep extending one file.                                                      |
 | pnpm root package named `knowledge-workspace` | **`ai-knowledge-base`**                                    | Cosmetic; the workspace protocol and `@knowledge/*` package names, which the plans actually reference, are unchanged.                                                                                   |
 
+### Corrections applied to the written SQL
+
+Plan 01 Tasks 2-3 shipped SQL that does not run as written. These four
+corrections are in the migrations and tests on the integration branch; later
+plans must not reintroduce the original spellings.
+
+| Defect                                                                                                                                                                                             | Where                                                                                                                              | Correction                                                                                                                                                                                   |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `case when ... then 'members.manage_admin' else 'members.manage_basic' end` resolves to `text`, so it never matches the `app_capability` overload                                                  | `0003`: the `invitations_read_manager` policy plus `create_invitation`, `revoke_invitation`, `change_member_role`, `remove_member` | Cast both branches to `public.app_capability`. Only the policy failed at migration time; the four RPCs would have failed at first call.                                                      |
+| `revoke all on all functions in schema private` strips `execute` from `authenticated`, but three RLS policies call `private.*` helpers directly, and a policy expression runs as the querying role | `0003` final section                                                                                                               | Grant `execute` on `private.is_workspace_member` and `private.shares_workspace` to `authenticated`. `usage` on schema `private` stays revoked, so PostgREST still cannot reach them by name. |
+| `max(user_id)` on a `uuid` column - Postgres has no `max(uuid)` aggregate, so the single-Owner guard raised `42883` on every commit that touched workspaces or memberships                         | `0002`: `private.assert_single_workspace_owner`                                                                                    | Use `(array_agg(user_id) filter (where role = 'owner'))[1]`.                                                                                                                                 |
+| `extensions.not_ok(...)` is not a pgTAP function                                                                                                                                                   | `supabase/tests/0003_workspace_access.test.sql`                                                                                    | Use `extensions.ok(not ...)`, which asserts the same thing.                                                                                                                                  |
+
+The third defect survived because both owner guards are `deferrable initially
+deferred` and the written tests end in `rollback`, so the triggers never fired.
+`supabase/tests/0002_identity_workspaces.test.sql` now carries two extra
+assertions that force them with `set constraints all immediate`; keep that
+technique for every deferred constraint added later.
+
 ## Master Completion Gate
 
 - [ ] All five child plan completion gates are checked against their actual commits.

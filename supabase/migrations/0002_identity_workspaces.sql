@@ -97,7 +97,7 @@ begin
   if not found or target.state <> 'ACTIVE' then return; end if;
 
   select count(*), count(*) filter (where role = 'owner'),
-         max(user_id) filter (where role = 'owner')
+         (array_agg(user_id) filter (where role = 'owner'))[1]
     into active_count, owner_count, active_owner
     from public.memberships
    where workspace_id = target_workspace_id and status = 'active';
