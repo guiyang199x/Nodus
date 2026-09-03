@@ -32,3 +32,42 @@ describe('auth service', () => {
     });
   });
 });
+
+describe('auth service input validation', () => {
+  it('returns a renderable form error instead of throwing on a malformed address', async () => {
+    const auth: AuthGateway = {
+      signInWithOtp: vi.fn(),
+      signInWithOAuth: vi.fn(),
+      exchangeCodeForSession: vi.fn(),
+    };
+    await expect(
+      requestEmailOtp(auth, { email: 'not-an-email', callbackUrl: 'https://app.test/auth/callback' })
+    ).resolves.toEqual({
+      ok: false,
+      error: { code: 'INVALID_INPUT', message: '请输入有效的邮箱地址。' },
+    });
+    expect(auth.signInWithOtp).not.toHaveBeenCalled();
+  });
+
+  it('reports a provider failure without leaking provider detail', async () => {
+    const auth: AuthGateway = {
+      signInWithOtp: vi.fn().mockResolvedValue({ error: { message: 'smtp 550 blocked' } }),
+      signInWithOAuth: vi.fn().mockResolvedValue({ data: { url: null }, error: null }),
+      exchangeCodeForSession: vi.fn(),
+    };
+    const otp = await requestEmailOtp(auth, {
+      email: 'person@example.test',
+      callbackUrl: 'https://app.test/auth/callback',
+    });
+    expect(otp).toEqual({
+      ok: false,
+      error: { code: 'DEPENDENCY_FAILED', message: '发送失败，请稍后重试。' },
+    });
+    await expect(
+      beginGoogleSignIn(auth, { callbackUrl: 'https://app.test/auth/callback' })
+    ).resolves.toEqual({
+      ok: false,
+      error: { code: 'DEPENDENCY_FAILED', message: 'Google 登录暂时不可用，请使用邮箱登录。' },
+    });
+  });
+});

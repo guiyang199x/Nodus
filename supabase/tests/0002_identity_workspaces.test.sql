@@ -37,8 +37,14 @@ select extensions.throws_ok(
   '23503', null,
   'membership requires an existing auth user'
 );
+-- Scoped to this fixture's workspace: a global count would only hold on a
+-- pristine database and would break as soon as anyone signs in locally.
 select extensions.is(
-  (select count(*)::integer from public.audit_events where action = 'workspace.created'),
+  (select count(*)::integer from public.audit_events
+    where action = 'workspace.created'
+      and workspace_id = (select id from public.workspaces
+                           where owner_user_id = '10000000-0000-4000-8000-000000000001'
+                             and kind = 'personal')),
   1,
   'personal workspace creation is audited without content'
 );

@@ -4,9 +4,10 @@ import { redirect } from 'next/navigation';
 
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 
-import { beginGoogleSignIn, requestEmailOtp } from './service';
+import { LOGIN_STATE_COPY } from './login-copy';
+import type { GoogleState, LoginState } from './login-state';
 
-export type LoginState = { status: 'idle' | 'sent' | 'error'; message: string };
+import { beginGoogleSignIn, requestEmailOtp } from './service';
 
 function safeNext(value: FormDataEntryValue | null): string {
   const next = typeof value === 'string' ? value : '/';
@@ -23,22 +24,37 @@ export async function requestEmailOtpAction(
   _state: LoginState,
   formData: FormData
 ): Promise<LoginState> {
+  const email = String(formData.get('email') ?? '');
   const client = await createServerSupabaseClient();
-  const next = safeNext(formData.get('next'));
   const result = await requestEmailOtp(client.auth, {
-    email: String(formData.get('email') ?? ''),
-    callbackUrl: callbackUrl(next),
+    email,
+    callbackUrl: callbackUrl(safeNext(formData.get('next'))),
   });
-  return result.ok
-    ? { status: 'sent', message: '登录链接已发送，请检查邮箱。' }
-    : { status: 'error', message: result.error.message };
+  if (result.ok) {
+    return {
+      status: 'sent',
+      message: LOGIN_STATE_COPY.sent,
+      email,
+      sentAt: Date.now(),
+    };
+  }
+  return {
+    status: result.error.code === 'INVALID_INPUT' ? 'invalid' : 'error',
+    message: result.error.message,
+    email,
+    sentAt: null,
+  };
 }
 
-export async function signInWithGoogleAction(formData: FormData): Promise<never> {
+export async function signInWithGoogleAction(
+  _state: GoogleState,
+  formData: FormData
+): Promise<GoogleState> {
   const client = await createServerSupabaseClient();
   const result = await beginGoogleSignIn(client.auth, {
     callbackUrl: callbackUrl(safeNext(formData.get('next'))),
   });
-  if (!result.ok) redirect(`/login?error=${encodeURIComponent(result.error.message)}`);
+  // Only a failure returns state; success leaves the app for the provider.
+  if (!result.ok) return { status: 'error', message: result.error.message };
   redirect(result.data.url);
 }

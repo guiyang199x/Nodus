@@ -1,25 +1,215 @@
 @import 'tailwindcss';
 @config '../../tailwind.config.ts';
 
+/*
+ * Design tokens from docs/superpowers/specs/2026-09-02-general-ai-knowledge-base-design.md
+ * and the login page spec. MVP is light mode only, so there is no
+ * prefers-color-scheme block: the warm neutral palette is the only palette.
+ */
 :root {
-  --foreground-rgb: 0, 0, 0;
-  --background-rgb: 255, 255, 255;
+  --canvas: #fffefc;
+  --surface: #f7f7f5;
+  --ink: #37352f;
+  --muted: #6b6a66;
+  --line: #e9e9e7;
+  --hover: #efefed;
+  --accent: #2869d8;
+  --accent-strong: #1f56b8;
+  --danger: #b42318;
+
+  --radius-control: 6px;
+  --control-height: 56px;
+
+  --font-sans:
+    var(--font-geist-sans), 'PingFang SC', 'Microsoft YaHei', system-ui, -apple-system,
+    sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --foreground-rgb: 255, 255, 255;
-    --background-rgb: 0, 0, 0;
-  }
+html,
+body {
+  background: var(--canvas);
+  color: var(--ink);
 }
 
 body {
-  color: rgb(var(--foreground-rgb));
-  background: rgb(var(--background-rgb));
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
 }
 
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
+/* ---------------------------------------------------------------------------
+ * Login entrance and ambient motion.
+ * Every animation below is disabled under prefers-reduced-motion, which the
+ * final block replaces with an opacity fade no longer than 150 ms.
+ * ------------------------------------------------------------------------ */
+
+@keyframes enter-rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes enter-drift {
+  from {
+    opacity: 0;
+    transform: translate(var(--drift-x, 0), var(--drift-y, 12px));
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes node-drift {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(var(--node-shift, -5px));
+  }
+}
+
+@keyframes paper-float {
+  0%,
+  100% {
+    transform: translateY(0) rotate(var(--paper-tilt, 0deg));
+  }
+  50% {
+    transform: translateY(-4px) rotate(calc(var(--paper-tilt, 0deg) + 0.4deg));
+  }
+}
+
+@keyframes trace-draw {
+  0% {
+    stroke-dashoffset: var(--trace-length);
+    opacity: 0.9;
+  }
+  22% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+  86% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 0;
+  }
+}
+
+@keyframes node-pulse {
+  0%,
+  70%,
+  100% {
+    transform: scale(1);
+    opacity: 0;
+  }
+  78% {
+    transform: scale(1.9);
+    opacity: 0.5;
+  }
+  92% {
+    transform: scale(2.6);
+    opacity: 0;
+  }
+}
+
+.enter-rise {
+  animation: enter-rise 420ms cubic-bezier(0.22, 0.8, 0.3, 1) both;
+  animation-delay: var(--enter-delay, 0ms);
+}
+
+.enter-drift {
+  animation: enter-drift var(--enter-duration, 620ms) cubic-bezier(0.22, 0.8, 0.3, 1) both;
+  animation-delay: var(--enter-delay, 0ms);
+}
+
+/* Ambient loops live inside the constellation and stop when the tab is hidden
+ * or the form is focused, which the component drives with data-ambient. */
+[data-ambient] .ambient-node {
+  animation: node-drift var(--node-duration, 7s) ease-in-out infinite;
+  animation-delay: var(--node-delay, 0s);
+}
+
+[data-ambient] .ambient-paper {
+  animation: paper-float var(--paper-duration, 8s) ease-in-out infinite;
+  animation-delay: var(--paper-delay, 0s);
+}
+
+[data-ambient] .ambient-trace {
+  stroke-dasharray: var(--trace-length);
+  animation: trace-draw 6s linear infinite;
+}
+
+[data-ambient] .ambient-pulse {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: node-pulse 6s linear infinite;
+}
+
+/* While the visitor is typing, the ambient loop drops to roughly 40% strength
+ * so decoration never competes with the form. */
+.login-shell:focus-within [data-ambient='on'] .ambient-node,
+.login-shell:focus-within [data-ambient='on'] .ambient-paper,
+.login-shell:focus-within [data-ambient='on'] .ambient-trace,
+.login-shell:focus-within [data-ambient='on'] .ambient-pulse {
+  animation-duration: 16s;
+  opacity: 0.55;
+}
+
+[data-ambient='paused'] .ambient-node,
+[data-ambient='paused'] .ambient-paper,
+[data-ambient='paused'] .ambient-trace,
+[data-ambient='paused'] .ambient-pulse {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .enter-rise,
+  .enter-drift {
+    animation: enter-fade 150ms ease both;
+    animation-delay: 0ms;
+  }
+
+  [data-ambient] .ambient-node,
+  [data-ambient] .ambient-paper,
+  [data-ambient] .ambient-trace,
+  [data-ambient] .ambient-pulse {
+    animation: none;
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+
+  [data-ambient] .ambient-pulse {
+    opacity: 0;
+  }
+}
+
+@keyframes enter-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Scene density per acceptance width: below 768 px only two documents, three
+ * nodes and the single cobalt connection remain, per the login page spec. */
+@media (max-width: 1023px) {
+  .scene-lg {
+    display: none;
+  }
+}
+
+@media (max-width: 767px) {
+  .scene-md {
+    display: none;
   }
 }

@@ -15,17 +15,26 @@ export type AuthGateway = {
   exchangeCodeForSession(code: string): Promise<{ error: AuthError | null }>;
 };
 
+export const INVALID_EMAIL_MESSAGE = '请输入有效的邮箱地址。';
+export const OTP_FAILURE_MESSAGE = '发送失败，请稍后重试。';
+export const GOOGLE_FAILURE_MESSAGE = 'Google 登录暂时不可用，请使用邮箱登录。';
+
 export async function requestEmailOtp(
   auth: AuthGateway,
   input: { email: string; callbackUrl: string }
 ): Promise<ActionResult<undefined>> {
-  const email = z.string().email().parse(input.email).toLowerCase();
+  // A malformed address is a form state the page has to render, not a crash.
+  const parsed = z.string().trim().email().safeParse(input.email);
+  if (!parsed.success) {
+    return { ok: false, error: { code: 'INVALID_INPUT', message: INVALID_EMAIL_MESSAGE } };
+  }
+  const email = parsed.data.toLowerCase();
   const { error } = await auth.signInWithOtp({
     email,
     options: { emailRedirectTo: input.callbackUrl },
   });
   return error
-    ? { ok: false, error: { code: 'DEPENDENCY_FAILED', message: '验证码邮件发送失败，请稍后重试' } }
+    ? { ok: false, error: { code: 'DEPENDENCY_FAILED', message: OTP_FAILURE_MESSAGE } }
     : { ok: true, data: undefined };
 }
 
@@ -38,6 +47,6 @@ export async function beginGoogleSignIn(
     options: { redirectTo: input.callbackUrl },
   });
   return error || !data.url
-    ? { ok: false, error: { code: 'DEPENDENCY_FAILED', message: 'Google 登录暂时不可用' } }
+    ? { ok: false, error: { code: 'DEPENDENCY_FAILED', message: GOOGLE_FAILURE_MESSAGE } }
     : { ok: true, data: { url: data.url } };
 }

@@ -26,6 +26,10 @@ const nextConfig: NextConfig = {
   // Next 16 writes AGENTS.md and CLAUDE.md into apps/web on every dev run.
   // The repository keeps its agent instructions elsewhere, so opt out.
   agentRules: false,
+  // APP_URL and supabase/config.toml both use 127.0.0.1, which Next 16 dev
+  // otherwise treats as a foreign origin and refuses to serve dev resources
+  // to, leaving the client unhydrated. Development only.
+  allowedDevOrigins: ['127.0.0.1'],
   transpilePackages: ['@knowledge/domain', '@knowledge/ai', '@knowledge/observability'],
   // The proxy and the server runtimes do not inherit the process.env writes
   // above, so the values they need are declared here and inlined by Next.
