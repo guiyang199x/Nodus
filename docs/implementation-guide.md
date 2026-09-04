@@ -141,7 +141,10 @@ export default [
 OPENAI_API_KEY=sk-...
 OPENAI_KNOWLEDGE_MODEL=gpt-4o-2024-11-20
 OPENAI_VISUAL_MODEL=gpt-4o
-OPENAI_EMBEDDING_MODEL=text-embedding-3-small
+EMBEDDING_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
+EMBEDDING_API_KEY=sk-...
+EMBEDDING_MODEL=text-embedding-v4
+EMBEDDING_DIMENSIONS=1024
 
 # Web环境变量（Next.js）
 NEXT_PUBLIC_SUPABASE_URL=http://localhost:54321

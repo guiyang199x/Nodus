@@ -6,3 +6,5 @@
  * Worker can depend on a stable import path without coupling to a vendor SDK.
  */
 export const AI_PACKAGE = '@knowledge/ai' as const;
+
+export * from './config';

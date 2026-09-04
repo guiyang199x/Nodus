@@ -31,9 +31,17 @@ export const config = {
     baseURL: process.env.OPENAI_BASE_URL || 'https://api.openai.com/v1',
     knowledgeModel: process.env.OPENAI_KNOWLEDGE_MODEL || 'deepseek-v4-pro',
     visualModel: process.env.OPENAI_VISUAL_MODEL || 'deepseek-v4-flash-vision-exp',
-    embeddingModel: process.env.OPENAI_EMBEDDING_MODEL || 'text-embedding-3-small',
     maxRetries: 3,
     timeout: 60000,
+  },
+
+  // Embeddings come from a different vendor than the models above; see
+  // packages/ai/src/config.ts for why the two are configured separately.
+  embedding: {
+    baseURL: process.env.EMBEDDING_BASE_URL,
+    apiKey: process.env.EMBEDDING_API_KEY,
+    model: process.env.EMBEDDING_MODEL,
+    dimensions: process.env.EMBEDDING_DIMENSIONS,
   },
 
   // Supabase configuration

@@ -92,7 +92,10 @@ SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 OPENAI_API_KEY=sk-your-api-key
 OPENAI_KNOWLEDGE_MODEL=gpt-4o-2024-11-20
 OPENAI_VISUAL_MODEL=gpt-4o
-OPENAI_EMBEDDING_MODEL=text-embedding-3-small
+EMBEDDING_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
+EMBEDDING_API_KEY=sk-...
+EMBEDDING_MODEL=text-embedding-v4
+EMBEDDING_DIMENSIONS=1024
 
 # Worker Configuration (optional)
 WORKER_POLL_INTERVAL_MS=5000
