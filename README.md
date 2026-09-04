@@ -60,6 +60,7 @@ pnpm db:reset
 
 ## Documentation
 
+- [Google sign-in setup](docs/google-sign-in-setup.md) — swap the local email link for one-click sign-in
 - [Project summary](docs/PROJECT-SUMMARY.md)
 - [Implementation guide](docs/implementation-guide.md)
 - [Daily execution](docs/daily-execution-guide.md)

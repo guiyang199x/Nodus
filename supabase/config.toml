@@ -318,6 +318,27 @@ max_frequency = "5s"
 # Use an external OAuth provider. The full list of providers are: `apple`, `azure`, `bitbucket`,
 # `discord`, `facebook`, `github`, `gitlab`, `google`, `keycloak`, `linkedin_oidc`, `notion`, `twitch`,
 # `twitter`, `x`, `slack`, `spotify`, `workos`, `zoom`.
+# Real Google sign-in for local development.
+#
+# Flip `enabled` to true once GOOGLE_CLIENT_ID and GOOGLE_SECRET exist in
+# .env.local, then run `supabase stop && supabase start` - config.toml is only
+# read when the containers start, so `db reset` alone will not pick this up.
+#
+# In the Google Cloud console the authorised redirect URI must be exactly:
+#   http://127.0.0.1:54321/auth/v1/callback
+# That is Supabase's callback, not the application's. The app's own
+# /auth/callback is already covered by auth.additional_redirect_urls above.
+[auth.external.google]
+enabled = false
+client_id = "env(GOOGLE_CLIENT_ID)"
+# Never commit the secret; it is read from the environment.
+secret = "env(GOOGLE_SECRET)"
+redirect_uri = ""
+url = ""
+# Required for local sign-in with Google.
+skip_nonce_check = true
+email_optional = false
+
 [auth.external.apple]
 enabled = false
 client_id = ""
