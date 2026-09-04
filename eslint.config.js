@@ -11,6 +11,13 @@ export default [
       '**/.supabase/**',
       '**/coverage/**',
       'pnpm-lock.yaml',
+      // Git worktrees hold a second copy of the whole repository, so linting
+      // them reports every finding twice and makes the result depend on which
+      // worktrees happen to exist on the machine.
+      '.worktrees/**',
+      // Playwright output.
+      'test-results/**',
+      'playwright-report/**',
     ],
   },
   {
