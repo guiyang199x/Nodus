@@ -2738,7 +2738,7 @@ Before proceeding to Plan 04, verify all AI analysis, evidence integrity, human 
 - `OPENAI_API_KEY` — service credential (never in browser/logs)
 - `OPENAI_KNOWLEDGE_MODEL` — model identifier
 - `OPENAI_VISUAL_MODEL` — OCR model (from Plan 02)
-- `OPENAI_EMBEDDING_MODEL` — embedding model (from Plan 02)
+- `EMBEDDING_MODEL` — embedding model, on its own provider (from Plan 02)
 
 ### Worker Operations
 

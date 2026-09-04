@@ -1407,7 +1407,7 @@ import { z } from 'zod';
 
 const WorkerConfigSchema = z.object({
   SUPABASE_URL: z.string().url(),
-  SUPABASE_ANON_KEY: z.string().min(20),
+  SUPABASE_PUBLISHABLE_KEY: z.string().min(20),
   SUPABASE_WORKER_JWT: z.string().min(40),
   SUPABASE_STORAGE_SERVICE_KEY: z.string().min(40),
   DOCUMENT_ORIGINALS_BUCKET: z.string().min(1),
@@ -1415,8 +1415,12 @@ const WorkerConfigSchema = z.object({
   CLAMD_HOST: z.string().min(1),
   CLAMD_PORT: z.coerce.number().int().min(1).max(65535).default(3310),
   OPENAI_API_KEY: z.string().min(20),
-  OPENAI_EMBEDDING_MODEL: z.string().min(1),
   OPENAI_VISUAL_MODEL: z.string().min(1),
+  // Embeddings are a separate vendor; see packages/ai/src/config.ts.
+  EMBEDDING_BASE_URL: z.string().url(),
+  EMBEDDING_API_KEY: z.string().min(20),
+  EMBEDDING_MODEL: z.string().min(1),
+  EMBEDDING_DIMENSIONS: z.coerce.number().int().positive().max(4096),
 });
 
 export type WorkerConfig = z.infer<typeof WorkerConfigSchema>;
@@ -1463,10 +1467,10 @@ export interface WorkerRpc {
 
 export function createWorkerRpc(input: {
   supabaseUrl: string;
-  anonKey: string;
+  publishableKey: string;
   workerJwt: string;
 }): WorkerRpc {
-  const client = createClient<Database>(input.supabaseUrl, input.anonKey, {
+  const client = createClient<Database>(input.supabaseUrl, input.publishableKey, {
     auth: { persistSession: false, autoRefreshToken: false },
     global: { headers: { Authorization: `Bearer ${input.workerJwt}` } },
   });
@@ -1727,7 +1731,7 @@ import { createStageHandlers } from './stages';
 const config = readWorkerConfig(process.env);
 const rpc = createWorkerRpc({
   supabaseUrl: config.SUPABASE_URL,
-  anonKey: config.SUPABASE_ANON_KEY,
+  publishableKey: config.SUPABASE_PUBLISHABLE_KEY,
   workerJwt: config.SUPABASE_WORKER_JWT,
 });
 const handlers = createStageHandlers(config, rpc);
@@ -3553,7 +3557,7 @@ export class OpenAiEmbeddingProvider implements EmbeddingProvider {
 }
 ```
 
-Export the embedding types and adapter from `packages/ai/src/index.ts`. Keep the model ID solely in `OPENAI_EMBEDDING_MODEL`; tests must fail if a model-like string appears outside configuration, fixtures, or adapter-construction code.
+Export the embedding types and adapter from `packages/ai/src/index.ts`. Keep the model ID solely in `EMBEDDING_MODEL`, and always send `EMBEDDING_DIMENSIONS` explicitly rather than relying on the provider default; tests must fail if a model-like string appears outside configuration, fixtures, or adapter-construction code.
 
 - [ ] **Step 5: Add leased embedding writes and atomic publication to migration 0006**
 
