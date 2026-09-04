@@ -641,6 +641,7 @@ git commit -m "feat: add redacted observability and workspace limits"
 
 **Files:**
 
+- Create: `supabase/migrations/00XX_rpc_execute_hardening.sql` (next free number at execution time)
 - Create: `tests/security/tenant-matrix.spec.ts`
 - Create: `tests/security/prompt-injection.spec.ts`
 - Create: `tests/security/cache-isolation.spec.ts`
@@ -663,6 +664,37 @@ git commit -m "feat: add redacted observability and workspace limits"
 
 - Consumes: all authenticated APIs, database policies, Storage paths, retrieval, graph, chat, Q&A, lifecycle, and logging surfaces from Plans 01–04 and Tasks 1–4.
 - Produces: `pnpm test:security`, `pnpm test:ai-evals`, a zero-leakage release gate, and adjudicated QA/citation metrics.
+
+- [ ] **Step 0: Close the anonymous RPC execute surface carried forward from Plan 01**
+
+Plan 01 verified this and deliberately deferred it: no data leaks, but the
+surface is wider than the specification asks for.
+
+PostgreSQL grants `execute` on a new function to `PUBLIC` by default. Plan 01's
+migration `0003` revoked that only for `has_workspace_capability` and
+`assert_workspace_capability`, so the remaining workspace, membership,
+invitation and upload RPCs stayed callable by `anon`. Each one self-guards, and
+this was checked against the running API during Plan 01: `create_team_workspace`
+and `accept_invitation` return `42501 authentication required`,
+`set_last_workspace` and `transfer_workspace_ownership` return
+`42501 workspace capability denied`, `remove_member` returns
+`P0002 active member not found`, and nothing is written. So there is no
+disclosure of workspace contents.
+
+Two reasons to close it anyway:
+
+- The specification says anonymous users hold no business-table privileges by
+  default, and an executable RPC is a privilege.
+- The differing error codes are a weak oracle. `P0002 active member not found`
+  and `42501 workspace capability denied` are distinguishable, which lets an
+  unauthenticated caller probe whether a guessed workspace id exists.
+
+Add a migration that revokes `execute` from `public` and `anon` on every
+function in `public` created by Plans 01 to 04, then re-grants only to
+`authenticated`, and set `alter default privileges` so later functions do not
+reintroduce the gap. Cover it in `tests/security/tenant-matrix.spec.ts` by
+asserting that an anonymous caller receives an identical response shape for a
+real workspace id and a random one.
 
 - [ ] **Step 1: Add failing adversarial tests**
 

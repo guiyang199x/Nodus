@@ -48,7 +48,7 @@ test('viewer is read-only, editor sees the team warning and a verified upload ap
     .eq('workspace_id', fixture.teamOne)
     .eq('user_id', fixture.users.viewer);
   await viewerPage.reload();
-  await expect(viewerPage.getByRole('heading', { name: '404' })).toBeVisible();
+  await expect(viewerPage.getByRole('heading', { name: '找不到这个页面' })).toBeVisible();
 
   await viewerContext.close();
   await editorContext.close();
@@ -58,5 +58,5 @@ test('an outsider cannot see another team and its documents stay invisible', asy
   const fixture = await seedFoundationFixture();
   await signIn(page, fixture.emails.outsider);
   await page.goto(`/w/${fixture.teamOne}/library`);
-  await expect(page.getByRole('heading', { name: '404' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '找不到这个页面' })).toBeVisible();
 });
